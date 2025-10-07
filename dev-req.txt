@@ -1,0 +1,3 @@
+frontend:
+	* npm i -D naive-ui
+	* npm install axios (npm config set proxy <company-proxy>)

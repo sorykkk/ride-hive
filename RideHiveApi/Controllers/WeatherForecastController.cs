@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace RideHive.Controllers
+namespace RideHiveApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]

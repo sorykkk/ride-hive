@@ -1,4 +1,4 @@
-namespace RideHive
+namespace RideHiveApi
 {
     public class WeatherForecast
     {
