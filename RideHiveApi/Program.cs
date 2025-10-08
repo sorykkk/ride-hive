@@ -1,20 +1,24 @@
+using RideHiveApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
-// Allow CORS (Cross-Origin Resource Sharing)
-// enables same origin policy (server explicitly allows browers send requests from one domain to another domain)
-// frontend communicates with backend
+// Bind configuration to models
+var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
+var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
+
+// Register configuration objects for DI
+builder.Services.Configure<CorsSettings>(builder.Configuration.GetSection("CorsSettings"));
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+
+// Configure CORS using configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", 
         policy => policy
-            //.AllowAnyOrigin()
-            // sets which frontend URLs are allowed
-            .WithOrigins("http://localhost:5173") // vue dev server
-            // Allows sending headers like Content-Type or Authorization
+            .WithOrigins(corsSettings.AllowedOrigins)
             .AllowAnyHeader()
             // Allows GET, POST, PUT, DELETE
             .AllowAnyMethod());
@@ -25,7 +29,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -34,7 +37,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Middleware pipeline (order matters)
+app.UseCors("AllowFrontend");
+
+// Only use HTTPS redirection in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 

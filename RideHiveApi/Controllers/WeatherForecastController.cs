@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RideHiveApi.Models;
 
 namespace RideHiveApi.Controllers
 {
@@ -28,6 +29,40 @@ namespace RideHiveApi.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost("analyze")]
+        public IActionResult AnalyzeTemperature([FromBody] TemperatureRequest request)
+        {
+            if (request?.Temperature == null)
+            {
+                return BadRequest("Temperature is required");
+            }
+
+            string adjective = GetTemperatureAdjective(request.Temperature);
+            
+            return Ok(new TemperatureResponse 
+            { 
+                Temperature = request.Temperature,
+                Adjective = adjective,
+                Message = $"It's {adjective} at {request.Temperature}°C"
+            });
+        }
+
+        private string GetTemperatureAdjective(double temperature)
+        {
+            return temperature switch
+            {
+                <= -10 => "Freezing",
+                <= 0 => "Very Cold",
+                <= 10 => "Cold",
+                <= 15 => "Cool",
+                <= 20 => "Mild",
+                <= 25 => "Warm",
+                <= 30 => "Hot",
+                <= 35 => "Very Hot",
+                _ => "Scorching"
+            };
         }
     }
 }
