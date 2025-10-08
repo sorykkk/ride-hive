@@ -1,4 +1,24 @@
 ####### Common #######
+# Environment variables
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# IDE files
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
 
 ####### Backend #######
 ## A streamlined .gitignore for modern .NET projects
@@ -55,9 +75,6 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
-# Visual Studio files and folders
-.vs
-
 ####### Frontend #######
 # Logs
 logs
@@ -74,6 +91,8 @@ dist-ssr
 *.local
 
 # Editor directories and files
+.vs
+.vscode/
 .vscode/*
 !.vscode/extensions.json
 .idea

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
+import { ApiClient, ApiConfig } from './services/api'
+
 </script>
 
 <template>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RideHiveApi.Models;
 
 namespace RideHiveApi.Controllers
 {
