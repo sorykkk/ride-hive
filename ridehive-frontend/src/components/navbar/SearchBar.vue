@@ -49,6 +49,7 @@ const handleBlur = () => {
     <NInput
       v-model:value="searchQuery"
       size="medium"
+      round
       placeholder="Search rides, locations..."
       clearable
       :class="{ 'search-focused': isFocused }"
