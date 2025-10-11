@@ -2,7 +2,6 @@
 // Global imports, router setup, etc.
 import TopNavigationBar from './components/navbar/TopNavigationBar.vue'
 import Footer from './components/Footer.vue'
-import Home from './components/Home.vue'
 import { ApiClient, ApiConfig } from './services/api'
 
 </script>
@@ -10,9 +9,9 @@ import { ApiClient, ApiConfig } from './services/api'
 <template>
   <div id="app">
     <TopNavigationBar />
-    <!-- Main content area -->
+    <!-- Main content area - now using router-view for dynamic pages -->
     <main>
-      <Home />
+      <router-view />
     </main>
     <Footer />
   </div>
