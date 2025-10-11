@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
+import type { Component } from 'vue'
 import { NDropdown, NButton, NIcon, NAvatar, NSpace } from 'naive-ui'
 import { 
   PersonOutline, 
@@ -10,22 +11,26 @@ import {
 } from '@vicons/ionicons5'
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
+function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) })
+}
+
 // Profile dropdown options - icons need to be render functions for NDropdown
 const profileOptions = [
   {
     label: 'My Profile',
     key: 'profile',
-    icon: () => h(NIcon, null, { default: () => h(PersonOutline) })
+    icon: renderIcon(PersonOutline)
   },
   {
     label: 'Settings',
     key: 'settings', 
-    icon: () => h(NIcon, null, { default: () => h(SettingsOutline) })
+    icon: renderIcon(SettingsOutline)
   },
   {
     label: 'Documents',
     key: 'documents',
-    icon: () => h(NIcon, null, { default: () => h(DocumentTextOutline) })
+    icon: renderIcon(DocumentTextOutline)
   },
   {
     type: 'divider',
@@ -34,7 +39,7 @@ const profileOptions = [
   {
     label: 'Log Out',
     key: 'logout',
-    icon: () => h(NIcon, null, { default: () => h(LogOutOutline) })
+    icon: renderIcon(LogOutOutline)
   }
 ]
 
@@ -79,8 +84,8 @@ const user = ref({
           :size="32" 
           :src="user.avatar || defaultProfilePic"
         />
-        <span style="font-weight: 500;">{{ user.name }}</span>
-        <NIcon size="16">
+        <span class="profile-name" style="font-weight: 500;">{{ user.name }}</span>
+        <NIcon class="profile-chevron" size="16">
           <ChevronDownOutline />
         </NIcon>
       </NSpace>
@@ -89,5 +94,32 @@ const user = ref({
 </template>
 
 <style scoped>
-/* Add any component-specific styles here */
+/* Responsive profile button - hide name on smaller screens */
+@media (max-width: 768px) {
+  .profile-name {
+    display: none;
+  }
+  
+  /* Bring chevron closer to profile pic and make button more compact */
+  .n-space {
+    gap: 2px !important;
+  }
+  
+  .n-button {
+    padding: 2px 6px !important;
+    min-height: 30px !important;
+  }
+  
+  .profile-chevron {
+    font-size: 14px !important;
+  }
+}
+
+/* Extra small screens - make avatar slightly smaller */
+@media (max-width: 480px) {
+  :deep(.n-avatar) {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
 </style>

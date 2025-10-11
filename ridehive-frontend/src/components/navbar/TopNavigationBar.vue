@@ -161,7 +161,7 @@ const handleNotificationsClick = () => {
   min-width: 80px !important;
 }
 
-/* Notification Badge Styles */
+/* @todo: replace it latter, it's a placeholder for now */
 :deep(.n-badge-sup) {
   background-color: #ff4757 !important;
   transform: translate(-6px, 6px); /* more left, more down */
@@ -176,6 +176,28 @@ const handleNotificationsClick = () => {
 .n-button[aria-label="Notifications"]:hover {
   background-color: #f0f0f0;
   transform: scale(1.05);
+}
+
+/* Responsive: prevent post button expansion on small screens */
+@media (max-width: 768px) {
+  .post-button-expanded {
+    border-radius: 50% !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+  }
+  
+  .post-button-expanded span {
+    display: none !important;
+  }
+  
+  /* Ensure consistent icon positioning by forcing the icon to stay in place */
+  .post-button-expanded :deep(.n-button__icon) {
+    margin: 0 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
 }
 
 </style>
