@@ -1,8 +1,44 @@
 <script setup lang="ts">
+
 import { ref, h } from 'vue'
-import { NLayoutHeader, NMenu, NSpace, NIcon, NButton, NBadge } from 'naive-ui'
-import { HomeOutline, AddOutline, NotificationsOutline, InformationCircleOutline } from '@vicons/ionicons5'
+import type { Component } from 'vue'
+import { 
+  HomeOutline, 
+  AddOutline, 
+  NotificationsOutline, 
+  InformationCircleOutline } from '@vicons/ionicons5'
+import { 
+  NLayoutHeader, 
+  NMenu, 
+  NSpace, 
+  NIcon, 
+  NButton,
+  NBadge } from 'naive-ui'
+import type { MenuProps } from 'naive-ui'
 import ProfileDropdown from './ProfileDropdown.vue'
+
+// builds the VNode rendering a naive-ui Component icon
+function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) })
+}
+
+// Override of default style
+type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>
+const menuThemeOverrides: MenuThemeOverrides = {
+  // text properties
+  itemTextColorActiveHorizontal: '#004d96',
+  itemTextColorHoverHorizontal: '#1e86db',
+  itemTextColorActiveHoverHorizontal: '#1e86db',
+  // icon properties
+  itemIconColorActiveHorizontal: '#004d96',
+  itemIconColorHoverHorizontal: '#1e86db',
+  itemIconColorActiveHoverHorizontal: '#1e86db',
+  // fallback options
+  itemTextColorActive: '#004d96',
+  itemTextColorHover: '#1e86db',
+  itemIconColorActive: '#004d96',
+  itemIconColorHover: '#1e86db',
+}
 
 const activeKey = ref('home') // holds currently selected menu
 const isPostHovered = ref(false)
@@ -12,12 +48,12 @@ const menuOptions = [
   {
     label: 'Home',
     key: 'home',
-    icon: () => h(NIcon, null, { default: () => h(HomeOutline) }) // builds the VNode rendering <NIcon>
+    icon: renderIcon(HomeOutline)
   },
   {
     label: 'About',
     key: 'about',
-    icon: () => h(NIcon, null, { default: () => h(InformationCircleOutline) })
+    icon: renderIcon(InformationCircleOutline)
   }
 ]
 
@@ -60,6 +96,7 @@ const handleNotificationsClick = () => {
           v-model:value="activeKey"
           mode="horizontal"
           :options="menuOptions"
+          :theme-overrides="menuThemeOverrides"
         />
         <!-- Post Button directly next to Home -->
         <!-- @ -> shorthand for v-on, is used to listen for DOM events and does something if it is true -->
@@ -141,37 +178,4 @@ const handleNotificationsClick = () => {
   transform: scale(1.05);
 }
 
-/* Home menu colors to match SearchBar */
-:deep(.n-menu-item--selected) {
-  color: #054682 !important;
-}
-
-:deep(.n-menu-item--selected .n-menu-item-content-header) {
-  color: #054682 !important;
-}
-
-:deep(.n-menu-item:hover) {
-  color: #1e86db !important;
-}
-
-:deep(.n-menu-item:hover .n-menu-item-content-header) {
-  color: #1e86db !important;
-}
-
-:deep(.n-menu-item--selected .n-icon) {
-  color: #054682 !important;
-}
-
-:deep(.n-menu-item:hover .n-icon) {
-  color: #1e86db !important;
-}
-
-/* Reduce spacing between menu items to bring About closer to Home */
-/* :deep(.n-menu-item) {
-  margin-right: -20px !important;
-}
-
-:deep(.n-menu-item:last-child) {
-  margin-right: 0 !important;
-} */
 </style>

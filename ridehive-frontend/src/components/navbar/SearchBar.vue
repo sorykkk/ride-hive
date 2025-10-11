@@ -1,7 +1,27 @@
 <script setup lang="ts">
+
 import { ref } from 'vue'
-import { NInput, NIcon, NButton } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'
+import { 
+  NInput, 
+  NIcon, 
+  NButton } from 'naive-ui'
+import type { InputProps } from 'naive-ui'
+
+type InputThemeOverride = NonNullable<InputProps['themeOverrides']>
+const inputThemeOverrides: InputThemeOverride = {
+  borderRadius: '24px',
+  border: '2px solid #e0e0e0',
+  borderHover: '2px solid #1e86db',
+  borderFocus: '2px solid #004d96',
+  boxShadowFocus: 'none',
+  paddingMedium: '0 12px',
+  heightMedium: '40px',
+  fontSizeMedium: '14px',
+  textColor: '#333',
+  placeholderColor: '#999',
+  caretColor: '#054682'
+}
 
 // Search state
 const searchQuery = ref('')
@@ -50,7 +70,7 @@ const handleBlur = () => {
       v-model:value="searchQuery"
       size="medium"
       round
-      placeholder="Search rides, locations..."
+      placeholder="Search cars, locations..."
       clearable
       :class="{ 'search-focused': isFocused }"
       class="search-input"
@@ -58,6 +78,7 @@ const handleBlur = () => {
       @blur="handleBlur"
       @keypress="handleKeyPress"
       @clear="handleClear"
+      :theme-overrides="inputThemeOverrides"
     >
       <template #prefix>
         <NIcon 
@@ -78,7 +99,9 @@ const handleBlur = () => {
           class="search-button"
         >
           <template #icon>
-            <NIcon><SearchOutline /></NIcon>
+            <NIcon>
+              <SearchOutline />
+            </NIcon>
           </template>
         </NButton>
       </template>
@@ -99,28 +122,6 @@ const handleBlur = () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.search-input :deep(.n-input__input-el) {
-  font-size: 14px;
-  padding: 0;
-  text-align: left;
-}
-
-.search-input :deep(.n-input__input-el)::placeholder {
-  text-align: left;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-focused :deep(.n-input__input-el)::placeholder,
-.search-input:has(input:not(:placeholder-shown)) :deep(.n-input__input-el)::placeholder {
-  transform: translateX(-20px);
-}
-
-.search-input :deep(.n-input__border) {
-  border-radius: 24px;
-  border: 2px solid #e0e0e0;
-  transition: all 0.3s ease;
-}
-
 .search-icon {
   color: #666;
   margin-right: 8px;
@@ -128,7 +129,7 @@ const handleBlur = () => {
   transform: translateX(0);
   width: 20px;
   overflow: hidden;
-}
+} 
 
 .search-icon.icon-hidden {
   opacity: 0;
@@ -139,42 +140,9 @@ const handleBlur = () => {
     width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   width: 0;
-  margin-left: 4px;
+  margin-left: 8px;
   margin-right: 0;
 }
-
-.search-focused .search-icon {
-  color: #054682;
-}
-
-.search-button {
-  margin-right: 4px;
-}
-
-.search-input :deep(.n-input__suffix) {
-  margin-right: 8px;
-}
-
-.search-input :deep(.n-input__prefix) {
-  margin-left: 8px;
-  transition: all 2.5s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-/* When focused or typing, reduce prefix space since icon is hidden */
-.search-focused :deep(.n-input__prefix) {
-  margin-left: 0px;
-}
-
-.search-focused :deep(.n-input__border) {
-  border-color: #054682 !important;
-  box-shadow: none !important;
-}
-
-.search-input:hover :deep(.n-input__border) {
-  border-color: #1e86db !important;
-  box-shadow: none !important;
-} 
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -191,16 +159,4 @@ const handleBlur = () => {
   }
 }
 
-/* Remove all default Naive UI focus/hover indicators */
-/* applies to all components which has .search-input class
-    :deep -> style applies and for components outsided of the current scope
-        but that are also child of .search-input
-    (.n-input) -> applies to .n-input child of .search-input
-*/
-/* __state-border is according BEM (Block Element Modifier) naming convention
-    so the block is .n-input, the element that is part of the block is separated by double _, __state-border
-    the modifier, would have double hyphens: --active */
-.search-input :deep(.n-input__state-border) {
-  display: none !important;
-}
 </style>
