@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, h } from 'vue'
+import { ref, h, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { Component } from 'vue'
 import { 
@@ -45,7 +45,7 @@ const menuThemeOverrides: MenuThemeOverrides = {
   itemIconColorHover: '#1e86db',
 }
 
-const activeKey = ref(route.name?.toString() || 'home') // holds currently selected menu
+const activeKey = ref<string | null>(route.name?.toString() || null) // holds currently selected menu
 const isPostHovered = ref(false)
 
 // Only include primary navigation items here. Profile is rendered on the right
@@ -62,6 +62,16 @@ const menuOptions = [
   }
 ]
 
+// Watch route changes to update active menu item
+watch(() => route.name, (newRouteName) => {
+  if (newRouteName && menuOptions.map(option => option.key).includes(newRouteName.toString())) {
+    activeKey.value = newRouteName.toString()
+  } else {
+    // For routes that aren't in the menu (like create-post), clear selection
+    activeKey.value = null
+  }
+})
+
 // Handle menu selection and navigation
 const handleMenuSelect = (key: string) => {
   activeKey.value = key
@@ -69,10 +79,9 @@ const handleMenuSelect = (key: string) => {
 }
 
 // Handle post button click
-//@todo: handle post click logic
 const handlePostClick = () => {
-  console.log('Post button clicked!')
-  // Navigate to create post page
+  // Clear menu selection and navigate to create post page
+  activeKey.value = null
   router.push({ name: 'create-post' })
 }
 
@@ -122,14 +131,10 @@ const handleNotificationsClick = () => {
           @mouseleave="isPostHovered = false"
           style="transition: all 0.3s ease; min-width: 40px; margin-left: 24px;"
         >
-          <!-- Insert this <NIcon> into the slot named icon of the parent component, only if isPostHovered is false -->
-          <template #icon v-if="!isPostHovered">
+          <template #icon>
             <NIcon><AddOutline /></NIcon>
           </template>
           <span v-if="isPostHovered" style="padding: 0 8px;">Post</span>
-          <template #icon v-if="isPostHovered">
-            <NIcon><AddOutline /></NIcon>
-          </template>
         </NButton>
       </div>
     </div>
