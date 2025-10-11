@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref, h } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import type { Component } from 'vue'
 import { 
   HomeOutline, 
@@ -16,6 +17,10 @@ import {
   NBadge } from 'naive-ui'
 import type { MenuProps } from 'naive-ui'
 import ProfileDropdown from './ProfileDropdown.vue'
+
+// Router setup
+const router = useRouter()
+const route = useRoute()
 
 // builds the VNode rendering a naive-ui Component icon
 function renderIcon(icon: Component) {
@@ -40,7 +45,7 @@ const menuThemeOverrides: MenuThemeOverrides = {
   itemIconColorHover: '#1e86db',
 }
 
-const activeKey = ref('home') // holds currently selected menu
+const activeKey = ref(route.name?.toString() || 'home') // holds currently selected menu
 const isPostHovered = ref(false)
 
 // Only include primary navigation items here. Profile is rendered on the right
@@ -57,11 +62,18 @@ const menuOptions = [
   }
 ]
 
+// Handle menu selection and navigation
+const handleMenuSelect = (key: string) => {
+  activeKey.value = key
+  router.push({ name: key })
+}
+
 // Handle post button click
 //@todo: handle post click logic
 const handlePostClick = () => {
   console.log('Post button clicked!')
-  // TODO: Open post creation modal or navigate to post page
+  // Navigate to create post page
+  router.push({ name: 'create-post' })
 }
 
 // Handle notifications click
@@ -79,9 +91,9 @@ const handleNotificationsClick = () => {
   >
     <!-- Logo -->
     <div style="margin-right: 12px;">
-      <a href="/">
+      <router-link to="/" style="text-decoration: none;">
         <img src="@/assets/logo/logo-1.png" class="logo" alt="ride-hive logo" />
-      </a>
+      </router-link>
     </div>
 
     <!-- Left Side: Navigation Menu + Post Button -->
@@ -97,6 +109,7 @@ const handleNotificationsClick = () => {
           mode="horizontal"
           :options="menuOptions"
           :theme-overrides="menuThemeOverrides"
+          @update:value="handleMenuSelect"
         />
         <!-- Post Button directly next to Home -->
         <!-- @ -> shorthand for v-on, is used to listen for DOM events and does something if it is true -->
