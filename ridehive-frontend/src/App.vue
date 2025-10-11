@@ -1,32 +1,41 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+// Global imports, router setup, etc.
+import TopNavigationBar from './components/navbar/TopNavigationBar.vue'
+import Home from './components/Home.vue'
 import { ApiClient, ApiConfig } from './services/api'
 
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div id="app">
+    <TopNavigationBar />
+    <!-- Main content area -->
+    <main>
+      <Home />
+    </main>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<style>
+/* Global reset for this app */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+#app {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+main {
+  flex: 1;
+  padding: 20px;
+  background-color: #f5f5f5;
 }
 </style>
