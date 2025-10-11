@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Global imports, router setup, etc.
 import TopNavigationBar from './components/navbar/TopNavigationBar.vue'
+import Footer from './components/Footer.vue'
 import Home from './components/Home.vue'
 import { ApiClient, ApiConfig } from './services/api'
 
@@ -13,6 +14,7 @@ import { ApiClient, ApiConfig } from './services/api'
     <main>
       <Home />
     </main>
+    <Footer />
   </div>
 </template>
 

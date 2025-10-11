@@ -7,6 +7,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 
 import HomeComponent from './components/Home.vue'
+import AboutComponent from './components/About.vue'
+import CreatePostComponent from './components/post/CreatePost.vue'
 
 // Define routes
 const routes = [
@@ -15,11 +17,16 @@ const routes = [
         name: 'Home',
         component: HomeComponent
     },
-    // {
-    //     path: '/weather/:id', // dynamic route
-    //     name: 'WeatherDetail',
-    //     component: WeatherDetailComponent
-    // }
+    {
+        path: '/about',
+        name: 'About',
+        component: AboutComponent
+    },
+    {
+        path: '/create-post',
+        name: 'Create post',
+        component: CreatePostComponent
+    }
 ]
 
 const app = createApp(App)
