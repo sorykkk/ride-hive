@@ -1,10 +1,16 @@
 using RideHiveApi.Models.Settings;
+using RideHiveApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Add Entity Framework with PostgreSQL
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
 var apiSettings = builder.Configuration.GetSection("ApiSettings").Get <ApiSettings> ()?? new ApiSettings();
@@ -31,6 +37,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Apply pending migrations on startup (for development)
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.Migrate(); // This applies any pending migrations
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

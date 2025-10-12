@@ -2,6 +2,7 @@ using RideHiveApi.Models.Extensions;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
+    //todo: correct this class for better representation
     public class CarResponseDto
     {
         public int CarId { get; set; }
