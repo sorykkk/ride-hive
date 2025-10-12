@@ -2,19 +2,22 @@
 // Global imports, router setup, etc.
 import TopNavigationBar from './components/navbar/TopNavigationBar.vue'
 import Footer from './components/Footer.vue'
-import { ApiClient, ApiConfig } from './services/api'
+import { NMessageProvider } from 'naive-ui'
+// import { ApiClient, ApiConfig } from './services/api'
 
 </script>
 
 <template>
-  <div id="app">
-    <TopNavigationBar />
-    <!-- Main content area - now using router-view for dynamic pages -->
-    <main>
-      <router-view />
-    </main>
-    <Footer />
-  </div>
+  <NMessageProvider>
+    <div id="app">
+      <TopNavigationBar />
+      <!-- Main content area - now using router-view for dynamic pages -->
+      <main>
+        <router-view />
+      </main>
+      <Footer />
+    </div>
+  </NMessageProvider>
 </template>
 
 <style>

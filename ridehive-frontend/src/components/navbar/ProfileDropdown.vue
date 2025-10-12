@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import type { Component } from 'vue'
+import { useRouter } from 'vue-router'
 import { NDropdown, NButton, NIcon, NAvatar, NSpace } from 'naive-ui'
 import { 
   PersonOutline, 
@@ -10,6 +11,9 @@ import {
   SendOutline
 } from '@vicons/ionicons5'
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
+
+// Router setup
+const router = useRouter()
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) })
@@ -45,22 +49,22 @@ const profileOptions = [
 
 // Handle dropdown menu selection
 const handleSelect = (key: string) => {
-  console.log('Selected:', key)
+  router.push({ name: key })
   // TODO: Add navigation logic here
-  switch (key) {
-    case 'profile':
-      // Navigate to profile page
-      break
-    case 'req-rents':
-      // Navigate to settings page  
-      break
-    case 'settings':
-      // Navigate to documents page
-      break
-    case 'logout':
-      // Handle logout logic
-      break
-  }
+  // switch (key) {
+  //   case 'profile':
+  //     router.push({})
+  //     break
+  //   case 'req-rents':
+  //     // Navigate to settings page  
+  //     break
+  //   case 'settings':
+  //     // Navigate to documents page
+  //     break
+  //   case 'logout':
+  //     // Handle logout logic
+  //     break
+  // }
 }
 
 // Mock user data (replace with real user data)

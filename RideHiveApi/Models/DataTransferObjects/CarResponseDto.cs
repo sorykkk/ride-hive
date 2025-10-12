@@ -30,7 +30,6 @@ namespace RideHiveApi.Models.DataTransferObjects
         // Important details
         public string ConditionDisplay { get; set; } = string.Empty;   // "Excellent", "Good", etc.
         public string VinNumber { get; set; } = string.Empty;
-        public string? Description { get; set; }
         
         // Images count or URLs
         //todo: make it get from table
