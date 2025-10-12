@@ -5,9 +5,9 @@ import { NDropdown, NButton, NIcon, NAvatar, NSpace } from 'naive-ui'
 import { 
   PersonOutline, 
   SettingsOutline, 
-  DocumentTextOutline, 
   LogOutOutline,
-  ChevronDownOutline 
+  ChevronDownOutline ,
+  SendOutline
 } from '@vicons/ionicons5'
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
@@ -23,14 +23,14 @@ const profileOptions = [
     icon: renderIcon(PersonOutline)
   },
   {
-    label: 'Settings',
-    key: 'settings', 
-    icon: renderIcon(SettingsOutline)
+    label: 'Requested rents',
+    key: 'req-rents', 
+    icon: renderIcon(SendOutline)
   },
   {
-    label: 'Documents',
-    key: 'documents',
-    icon: renderIcon(DocumentTextOutline)
+    label: 'Settings',
+    key: 'settings',
+    icon: renderIcon(SettingsOutline)
   },
   {
     type: 'divider',
@@ -51,10 +51,10 @@ const handleSelect = (key: string) => {
     case 'profile':
       // Navigate to profile page
       break
-    case 'settings':
+    case 'req-rents':
       // Navigate to settings page  
       break
-    case 'documents':
+    case 'settings':
       // Navigate to documents page
       break
     case 'logout':
