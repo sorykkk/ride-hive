@@ -2,6 +2,34 @@
 import { apiClient } from './base';
 import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto } from './types';
 
+// Map backend field names to frontend field names
+export const mapBackendFieldToFrontend = (backendField: string): string => {
+  const fieldMap: Record<string, string> = {
+    'OwnerId': 'ownerId',
+    'Brand': 'brand',
+    'Model': 'model',
+    'Version': 'version',
+    'Color': 'color',
+    'NumberDoors': 'numberDoors',
+    'NumberSeats': 'numberSeats',
+    'YearProduction': 'yearProduction',
+    'Course': 'course',
+    'Fuel': 'fuel',
+    'Consumption': 'consumption',
+    'Drive': 'drive',
+    'Transmission': 'transmission',
+    'Body': 'body',
+    'Displacement': 'displacement',
+    'HorsePower': 'horsePower',
+    'Condition': 'condition',
+    'VinNumber': 'vinNumber',
+    'OwnershipDocument': 'ownershipDocument',
+    'CarImages': 'carImages'
+  };
+  
+  return fieldMap[backendField] || backendField.toLowerCase();
+};
+
 export class CarsApi {
   // Get all cars
   async getAllCars(): Promise<CarResponseDto[]> {

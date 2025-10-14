@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEnumStore } from '@/stores/enums.store';
 import { 
@@ -20,6 +20,7 @@ import {
   type UploadFileInfo
 } from 'naive-ui';
 import { api } from '@/api';
+import { mapBackendFieldToFrontend } from '@/api/cars';
 import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
@@ -37,95 +38,138 @@ const currentUserId = 1;
 // Initialize enum store
 const enumStore = useEnumStore();
 
-// Form data
-const formData = ref({
+// Form-specific type for UI state management - extends CarCreateDto with nullable fields for validation
+interface CarFormData extends Omit<CarCreateDto, 'course' | 'displacement' | 'horsePower' | 'ownershipDocument' | 'carImages'> {
+  course: number | null;
+  displacement: number | null;
+  horsePower: number | null;
+  ownershipDocument: File | null;
+  carImages: File[];
+}
+
+// Form data - using CarFormData type for better type safety
+const formData = ref<CarFormData>({
   ownerId: currentUserId,
   brand: '',
   model: '',
-  version: '' as string | null,
+  version: '',
   color: '',
   numberDoors: 4,
   numberSeats: 5,
   yearProduction: new Date().getFullYear(),
-  course: null as number | null, // null to properly trigger validation
+  course: null, // null to properly trigger validation
   fuel: '',
   consumption: 0.1, // default value
   drive: '',
   transmission: '',
   body: '',
-  displacement: null as number | null,
-  horsePower: null as number | null, 
-  condition: 'Brand new',
+  displacement: null,
+  horsePower: null, 
+  condition: 'BrandNew', // Default to BrandNew enum value
   vinNumber: '',
-  ownershipDocument: null as File | null,
-  carImages: [] as File[]
+  ownershipDocument: null,
+  carImages: []
 });
 
 // File upload handling
 const ownershipDocumentList = ref<UploadFileInfo[]>([]);
 const carImagesList = ref<UploadFileInfo[]>([]);
 
-// Minimal frontend validation - let backend handle detailed validation
-const rules: FormRules = {
-  // Only essential UX validations that prevent unnecessary API calls
-  brand: [
-    { required: true, message: 'Brand is required', trigger: 'blur' }
-  ],
-  model: [
-    { required: true, message: 'Model is required', trigger: 'blur' }
-  ],
-  color: [
-    { required: true, message: 'Color is required', trigger: 'blur' }
-  ],
-  fuel: [
-    { required: true, message: 'Fuel type is required', trigger: 'change' }
-  ],
-  drive: [
-    { required: true, message: 'Drive type is required', trigger: 'change' }
-  ],
-  transmission: [
-    { required: true, message: 'Transmission is required', trigger: 'change' }
-  ],
-  body: [
-    { required: true, message: 'Body type is required', trigger: 'change' }
-  ],
-  vinNumber: [
-    { required: true, message: 'VIN number is required', trigger: 'blur' }
-  ],
-  course: [
-    { 
-      required: true, 
-      type: 'number',
-      message: "Current mileage is required", 
-      // trigger: ['blur', 'change'] 
-      trigger: 'blur'
+// Enhanced validation rules that include backend errors
+const createDynamicRules = (): FormRules => {
+  const baseRules: FormRules = {
+    // Only essential UX validations that prevent unnecessary API calls
+    brand: [
+      { required: true, message: 'Brand is required', trigger: 'blur' }
+    ],
+    model: [
+      { required: true, message: 'Model is required', trigger: 'blur' }
+    ],
+    color: [
+      { required: true, message: 'Color is required', trigger: 'blur' }
+    ],
+    fuel: [
+      { required: true, message: 'Fuel type is required', trigger: 'change' }
+    ],
+    drive: [
+      { required: true, message: 'Drive type is required', trigger: 'change' }
+    ],
+    transmission: [
+      { required: true, message: 'Transmission is required', trigger: 'change' }
+    ],
+    body: [
+      { required: true, message: 'Body type is required', trigger: 'change' }
+    ],
+    vinNumber: [
+      { required: true, message: 'VIN number is required', trigger: 'blur' }
+    ],
+    course: [
+      { 
+        required: true, 
+        type: 'number',
+        message: "Current mileage is required", 
+        trigger: 'blur'
+      }
+    ],
+    displacement: [
+      {
+        required: true,
+        type: 'number',
+        message: 'Displacement is required',
+        trigger: 'blur'
+      }
+    ],
+    horsePower: [
+      {
+        required: true,
+        type: 'number',
+        message: 'Horse Power is required',
+        trigger: 'blur'
+      }
+    ],
+    ownershipDocument: [
+      {
+        required: true,
+        type: 'object',
+        message: 'Document that proves ownership is required',
+        trigger: ['blur', 'change']
+      }
+    ]
+  };
+
+  // Add backend validation errors to rules
+  Object.entries(backendValidationErrors.value).forEach(([field, messages]) => {
+    const errorMessage = messages.join(', ');
+    console.log(`Adding backend validation for field '${field}': ${errorMessage}`);
+    
+    if (baseRules[field]) {
+      // Add backend errors to existing field rules
+      const existingRules = baseRules[field];
+      if (Array.isArray(existingRules)) {
+        existingRules.push({
+          validator: () => {
+            return Promise.reject(new Error(errorMessage));
+          },
+          trigger: ['blur', 'change']
+        });
+      }
+    } else {
+      // Create new rule for backend-only validations
+      baseRules[field] = [{
+        validator: () => {
+          return Promise.reject(new Error(errorMessage));
+        },
+        trigger: ['blur', 'change']
+      }];
     }
-  ],
-  displacement: [
-    {
-      required: true,
-      type: 'number',
-      message: 'Displacement is required',
-      trigger: 'blur'
-    }
-  ],
-  horsePower: [
-    {
-      required: true,
-      type: 'number',
-      message: 'Horse Power is required',
-      trigger: 'blur'
-    }
-  ],
-  ownershipDocument: [
-    {
-      required: true,
-      type: 'object',
-      message: 'Document that proves ownership is required',
-      trigger: ['blur', 'change']
-    }
-  ]
+  });
+
+  console.log('Generated rules:', Object.keys(baseRules));
+  return baseRules;
 };
+
+// Reactive rules that update when backend errors change
+const rules = computed(() => createDynamicRules());
 
 // Handle ownership document upload
 const handleOwnershipDocumentChange = (options: { fileList: UploadFileInfo[] }) => {
@@ -143,33 +187,46 @@ const handleCarImagesChange = (options: { fileList: UploadFileInfo[] }) => {
   formData.value.carImages = options.fileList.map(item => item.file as File).filter(Boolean);
 };
 
+// Store backend validation errors
+const backendValidationErrors = ref<Record<string, string[]>>({});
+
+// Clear backend validation error for a specific field
+const clearBackendError = (fieldName: string) => {
+  if (backendValidationErrors.value[fieldName]) {
+    delete backendValidationErrors.value[fieldName];
+    console.log(`Cleared backend error for field: ${fieldName}`);
+  }
+};
+
 // Submit form
 const handleSubmit = async () => {
   if (!formRef.value) return;
   
+  // Clear any previous backend validation errors at the start of each submission
+  backendValidationErrors.value = {};
+  
+  // First, validate the form - if validation fails, don't proceed
   try {
     await formRef.value.validate();
-    loading.value = true;
+  } catch (validationError) {
+    // Form validation failed - Naive UI will show field-level errors
+    // No need to show additional error messages, just return
+    console.log('Form validation failed:', validationError);
+    return;
+  }
 
-    const carData : CarCreateDto = {
-      ownerId: formData.value.ownerId,
-      brand: formData.value.brand,
-      model: formData.value.model,
-      version: formData.value.version?.trim() ?? "",
-      color: formData.value.color,
-      numberDoors: formData.value.numberDoors,
-      numberSeats: formData.value.numberSeats,
-      yearProduction: formData.value.yearProduction,
-      course: formData.value.course || 0,
-      fuel: formData.value.fuel,
-      consumption: formData.value.consumption || 0, // Send 0 for optional numeric field
-      drive: formData.value.drive,
-      transmission: formData.value.transmission,
-      body: formData.value.body,
-      displacement: formData.value.displacement || 0,
-      horsePower: formData.value.horsePower || 0,
-      condition: formData.value.condition,
-      vinNumber: formData.value.vinNumber,
+  // If we reach here, validation passed - proceed with API call
+  loading.value = true;
+  
+  try {
+    // Create CarCreateDto from formData with required field validation
+    const carData: CarCreateDto = {
+      ...formData.value,
+      version: formData.value.version?.trim() || undefined,
+      course: formData.value.course ?? 0,
+      consumption: formData.value.consumption || undefined,
+      displacement: formData.value.displacement ?? 0,
+      horsePower: formData.value.horsePower ?? 0,
       ownershipDocument: formData.value.ownershipDocument || undefined,
       carImages: formData.value.carImages.length > 0 ? formData.value.carImages : undefined
     };
@@ -181,18 +238,68 @@ const handleSubmit = async () => {
     router.push('/profile');
   } catch (error: any) {
     console.error('Failed to create car:', error);
+    console.log('Error name:', error.name);
+    console.log('Error status:', error.status);
+    console.log('Error data:', error.data);
+    console.log('Is validation error:', error.isValidationError);
     
     // Handle our custom ApiError
     if (error.name === 'ApiError') {
-      if (error.isValidationError && error.data?.errors) {
-        // Handle ASP.NET Core validation errors
-        const validationErrors = error.data.errors;
-        for (const [field, messages] of Object.entries(validationErrors)) {
-          if (Array.isArray(messages)) {
-            messages.forEach((msg: string) => message.error(`${field}: ${msg}`));
+      console.log('Processing ApiError...');
+      
+      if (error.isValidationError) {
+        console.log('Processing validation errors...');
+        
+        let validationErrors: any = null;
+        
+        // Try to get validation errors from error.data.errors first
+        if (error.data?.errors) {
+          validationErrors = error.data.errors;
+          console.log('Found errors in error.data.errors:', validationErrors);
+        }
+        // If not found, try to parse from error.data.message (JSON string)
+        else if (error.data?.message && typeof error.data.message === 'string') {
+          try {
+            const parsedData = JSON.parse(error.data.message);
+            if (parsedData.errors) {
+              validationErrors = parsedData.errors;
+              console.log('Found errors in parsed message:', validationErrors);
+            }
+          } catch (parseError) {
+            console.log('Failed to parse error message as JSON:', parseError);
           }
         }
-        return;
+        
+        if (validationErrors) {
+          console.log('Backend validation errors received:', validationErrors);
+          
+          // Clear previous backend errors
+          backendValidationErrors.value = {};
+          
+          // Process backend validation errors
+          for (const [field, messages] of Object.entries(validationErrors)) {
+            if (Array.isArray(messages)) {
+              // Convert backend field names to frontend field names
+              const frontendFieldName = mapBackendFieldToFrontend(field);
+              backendValidationErrors.value[frontendFieldName] = messages;
+              console.log(`Mapped ${field} -> ${frontendFieldName}:`, messages);
+            }
+          }
+          
+          console.log('Final backend validation errors:', backendValidationErrors.value);
+          
+          // Force form to revalidate and show the backend errors
+          if (formRef.value) {
+            // Use nextTick to ensure the reactive rules have been updated
+            nextTick(() => {
+              formRef.value?.validate().catch(() => {
+                // Expected to fail, backend validation errors will be shown
+                console.log('Form revalidation triggered with backend errors');
+              });
+            });
+          }
+          return;
+        }
       }
       
       // Handle other API errors
@@ -427,6 +534,7 @@ onBeforeMount(async () => {
                 clearable
                 minlength="17"
                 maxlength="17"
+                @input="() => clearBackendError('vinNumber')"
               />
             </NFormItem>
           </NGridItem>
