@@ -9,9 +9,13 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     About: typeof import('./src/components/About.vue')['default']
+    AddCar: typeof import('./src/components/car/AddCar.vue')['default']
+    CarProperty: typeof import('./src/components/profile/CarProperty.vue')['default']
     CreatePost: typeof import('./src/components/post/CreatePost.vue')['default']
+    EditCar: typeof import('./src/components/car/EditCar.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
+    Profile: typeof import('./src/components/profile/Profile.vue')['default']
     ProfileDropdown: typeof import('./src/components/navbar/ProfileDropdown.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

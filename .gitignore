@@ -3,6 +3,11 @@
 .env.local
 .env.*.local
 
+# Configuration files with secrets
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
 # Dependencies
 node_modules/
 
@@ -19,6 +24,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Migrations
+RideHiveApi/Migrations/
 
 ####### Backend #######
 ## A streamlined .gitignore for modern .NET projects
@@ -102,3 +110,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.code-workspace

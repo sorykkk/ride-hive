@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/components/Home.vue'
 import About from '@/components/About.vue'
 import CreatePost from '@/components/post/CreatePost.vue'
+import Profile from '@/components/profile/Profile.vue'
+import AddCar from '@/components/car/AddCar.vue'
+import EditCar from '@/components/car/EditCar.vue'
 
 const routes = [
   {
@@ -20,7 +23,24 @@ const routes = [
     path: '/create-post',
     name: 'create-post',
     component: CreatePost,
-
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: { title: 'Profile - RideHive' }
+  },
+  {
+    path: '/add-car',
+    name: 'add-car',
+    component: AddCar,
+    meta: { title: 'Add Car - RideHive' }
+  },
+  {
+    path: '/edit-car/:id',
+    name: 'edit-car',
+    component: EditCar,
+    meta: { title: 'Edit Car - RideHive' }
   }
 ]
 
