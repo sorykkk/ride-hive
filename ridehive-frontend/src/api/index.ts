@@ -1,6 +1,6 @@
 // Export all API modules and types
 export { ApiClient, ApiError, apiClient } from './base';
-export { CarsApi, carsApi, type CarCreateData } from './cars';
+export { CarsApi, carsApi } from './cars';
 export { EnumsApi, enumsApi } from './enums';
 
 // Import for internal use
@@ -11,7 +11,7 @@ import { enumsApi } from './enums';
 export type {
   CarItem,
   CarResponseDto,
-  UpdateCarDto,
+  CarUpdateDto,
   CarImageData,
   EnumOption,
   EnumCollections

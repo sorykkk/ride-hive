@@ -1,29 +1,6 @@
 //CRUD operations on cars
 import { apiClient } from './base';
-import type { CarItem, CarResponseDto, UpdateCarDto } from './types';
-
-export interface CarCreateData {
-  ownerId: number;
-  brand: string;
-  model: string;
-  version?: string; //todo: shouldn't it be version?: string | null?
-  color: string;
-  numberDoors: number;
-  numberSeats: number;
-  yearProduction: number;
-  course: number;
-  fuel: string;
-  consumption?: number;
-  drive: string;
-  transmission: string;
-  body: string;
-  displacement: number;
-  horsePower: number;
-  condition: string;
-  vinNumber: string;
-  ownershipDocument?: File;
-  carImages?: File[];
-}
+import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto } from './types';
 
 export class CarsApi {
   // Get all cars
@@ -42,7 +19,7 @@ export class CarsApi {
   }
 
   // Create new car with file uploads
-  async createCar(carData: CarCreateData): Promise<CarItem> {
+  async createCar(carData: CarCreateDto): Promise<CarItem> {
     const formData = new FormData();
 
     // Add all car properties to FormData
@@ -89,7 +66,7 @@ export class CarsApi {
   }
 
   // Update existing car
-  async updateCar(id: number, carData: UpdateCarDto): Promise<void> {
+  async updateCar(id: number, carData: CarUpdateDto): Promise<void> {
     return apiClient.put<void>(`/api/Cars/${id}`, carData);
   }
 

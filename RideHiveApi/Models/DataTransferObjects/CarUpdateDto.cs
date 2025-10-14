@@ -4,7 +4,7 @@ using RideHiveApi.Models.Enums;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
-    public class UpdateCarDto
+    public class CarUpdateDto
     {
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Brand must be between 2 and 50 characters")]
         public string? Brand { get; set; }

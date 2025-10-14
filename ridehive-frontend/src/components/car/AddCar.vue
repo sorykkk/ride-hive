@@ -2,7 +2,6 @@
 import { ref, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEnumStore } from '@/stores/enums.store';
-
 import { 
   NCard, 
   NForm, 
@@ -21,6 +20,7 @@ import {
   type UploadFileInfo
 } from 'naive-ui';
 import { api } from '@/api';
+import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
 const message = useMessage();
@@ -151,7 +151,7 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     loading.value = true;
 
-    const carData = {
+    const carData : CarCreateDto = {
       ownerId: formData.value.ownerId,
       brand: formData.value.brand,
       model: formData.value.model,

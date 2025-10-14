@@ -161,7 +161,7 @@ namespace RideHiveApi.Controllers
 
         // PUT: api/cars/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCar(int id, [FromBody] UpdateCarDto dto)
+        public async Task<IActionResult> UpdateCar(int id, [FromBody] CarUpdateDto dto)
         {
             try
             {

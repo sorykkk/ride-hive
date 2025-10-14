@@ -24,6 +24,30 @@ export interface CarItem {
   ownershipDocumentContentType?: string;
 }
 
+// Car type used exclusively to deal with form car data at creation
+export interface CarCreateDto {
+  ownerId: number;
+  brand: string;
+  model: string;
+  version?: string;
+  color: string;
+  numberDoors: number;
+  numberSeats: number;
+  yearProduction: number;
+  course: number;
+  fuel: string;
+  consumption?: number;
+  drive: string;
+  transmission: string;
+  body: string;
+  displacement: number;
+  horsePower: number;
+  condition: string;
+  vinNumber: string;
+  ownershipDocument?: File;
+  carImages?: File[];
+}
+
 export interface CarResponseDto {
   carId: number;
   ownerId: number;
@@ -48,7 +72,7 @@ export interface CarResponseDto {
   carImages: CarImageData[];
 }
 
-export interface UpdateCarDto {
+export interface CarUpdateDto {
   brand: string;
   model: string;
   version?: string;
