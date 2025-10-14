@@ -3,7 +3,6 @@
 // for generating clien.ts with all api
 
 using RideHiveApi.Models.Settings;
-using RideHiveApi.Models.Converters;
 using RideHiveApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-
-// for using [Description] for enums instead of their names when generating client.ts
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new EnumDescriptionConverterFactory());
-});
 
 // Add Entity Framework with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>

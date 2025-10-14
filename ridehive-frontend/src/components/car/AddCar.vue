@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
+import { useEnumStore } from '@/stores/enums.store';
+
 import { 
   NCard, 
   NForm, 
@@ -18,14 +20,7 @@ import {
   type FormRules,
   type UploadFileInfo
 } from 'naive-ui';
-import { apiService } from '@/services/apiService';
-import { 
-  FuelOptions, 
-  DriveOptions, 
-  TransmissionOptions, 
-  BodyOptions, 
-  ConditionOptions 
-} from '@/types/car';
+import { api } from '@/api';
 
 const router = useRouter();
 const message = useMessage();
@@ -39,25 +34,28 @@ const loading = ref(false);
 // Mock user ID - in real app this would come from auth store
 const currentUserId = 1;
 
+// Initialize enum store
+const enumStore = useEnumStore();
+
 // Form data
-const formData = reactive({
+const formData = ref({
   ownerId: currentUserId,
   brand: '',
   model: '',
-  version: '',
+  version: '' as string | null,
   color: '',
   numberDoors: 4,
   numberSeats: 5,
   yearProduction: new Date().getFullYear(),
-  course: 0,
+  course: null as number | null, // null to properly trigger validation
   fuel: '',
-  consumption: 0,
+  consumption: 0.1, // default value
   drive: '',
   transmission: '',
   body: '',
-  displacement: 0,
-  horsePower: 0,
-  condition: '',
+  displacement: null as number | null,
+  horsePower: null as number | null, 
+  condition: 'Brand new',
   vinNumber: '',
   ownershipDocument: null as File | null,
   carImages: [] as File[]
@@ -67,39 +65,65 @@ const formData = reactive({
 const ownershipDocumentList = ref<UploadFileInfo[]>([]);
 const carImagesList = ref<UploadFileInfo[]>([]);
 
-// Form validation rules
+// Minimal frontend validation - let backend handle detailed validation
 const rules: FormRules = {
+  // Only essential UX validations that prevent unnecessary API calls
   brand: [
-    { required: true, message: 'Please enter car brand', trigger: 'blur' }
+    { required: true, message: 'Brand is required', trigger: 'blur' }
   ],
   model: [
-    { required: true, message: 'Please enter car model', trigger: 'blur' }
+    { required: true, message: 'Model is required', trigger: 'blur' }
   ],
   color: [
-    { required: true, message: 'Please enter car color', trigger: 'blur' }
-  ],
-  yearProduction: [
-    { required: true, message: 'Please enter production year', trigger: 'blur' },
-    { type: 'number', min: 1900, max: new Date().getFullYear() + 1, message: 'Please enter a valid year', trigger: 'blur' }
+    { required: true, message: 'Color is required', trigger: 'blur' }
   ],
   fuel: [
-    { required: true, message: 'Please select fuel type', trigger: 'change' }
+    { required: true, message: 'Fuel type is required', trigger: 'change' }
   ],
   drive: [
-    { required: true, message: 'Please select drive type', trigger: 'change' }
+    { required: true, message: 'Drive type is required', trigger: 'change' }
   ],
   transmission: [
-    { required: true, message: 'Please select transmission type', trigger: 'change' }
+    { required: true, message: 'Transmission is required', trigger: 'change' }
   ],
   body: [
-    { required: true, message: 'Please select body type', trigger: 'change' }
-  ],
-  condition: [
-    { required: true, message: 'Please select condition', trigger: 'change' }
+    { required: true, message: 'Body type is required', trigger: 'change' }
   ],
   vinNumber: [
-    { required: true, message: 'Please enter VIN number', trigger: 'blur' },
-    { min: 17, max: 17, message: 'VIN number must be exactly 17 characters', trigger: 'blur' }
+    { required: true, message: 'VIN number is required', trigger: 'blur' }
+  ],
+  course: [
+    { 
+      required: true, 
+      type: 'number',
+      message: "Current mileage is required", 
+      // trigger: ['blur', 'change'] 
+      trigger: 'blur'
+    }
+  ],
+  displacement: [
+    {
+      required: true,
+      type: 'number',
+      message: 'Displacement is required',
+      trigger: 'blur'
+    }
+  ],
+  horsePower: [
+    {
+      required: true,
+      type: 'number',
+      message: 'Horse Power is required',
+      trigger: 'blur'
+    }
+  ],
+  ownershipDocument: [
+    {
+      required: true,
+      type: 'object',
+      message: 'Document that proves ownership is required',
+      trigger: ['blur', 'change']
+    }
   ]
 };
 
@@ -107,16 +131,16 @@ const rules: FormRules = {
 const handleOwnershipDocumentChange = (options: { fileList: UploadFileInfo[] }) => {
   ownershipDocumentList.value = options.fileList;
   if (options.fileList.length > 0 && options.fileList[0]?.file) {
-    formData.ownershipDocument = options.fileList[0].file as File;
+    formData.value.ownershipDocument = options.fileList[0].file as File;
   } else {
-    formData.ownershipDocument = null;
+    formData.value.ownershipDocument = null;
   }
 };
 
 // Handle car images upload
 const handleCarImagesChange = (options: { fileList: UploadFileInfo[] }) => {
   carImagesList.value = options.fileList;
-  formData.carImages = options.fileList.map(item => item.file as File).filter(Boolean);
+  formData.value.carImages = options.fileList.map(item => item.file as File).filter(Boolean);
 };
 
 // Submit form
@@ -128,36 +152,62 @@ const handleSubmit = async () => {
     loading.value = true;
 
     const carData = {
-      ownerId: formData.ownerId,
-      brand: formData.brand,
-      model: formData.model,
-      version: formData.version || undefined,
-      color: formData.color,
-      numberDoors: formData.numberDoors,
-      numberSeats: formData.numberSeats,
-      yearProduction: formData.yearProduction,
-      course: formData.course,
-      fuel: formData.fuel,
-      consumption: formData.consumption || undefined,
-      drive: formData.drive,
-      transmission: formData.transmission,
-      body: formData.body,
-      displacement: formData.displacement,
-      horsePower: formData.horsePower,
-      condition: formData.condition,
-      vinNumber: formData.vinNumber,
-      ownershipDocument: formData.ownershipDocument || undefined,
-      carImages: formData.carImages.length > 0 ? formData.carImages : undefined
+      ownerId: formData.value.ownerId,
+      brand: formData.value.brand,
+      model: formData.value.model,
+      version: formData.value.version?.trim() ?? "",
+      color: formData.value.color,
+      numberDoors: formData.value.numberDoors,
+      numberSeats: formData.value.numberSeats,
+      yearProduction: formData.value.yearProduction,
+      course: formData.value.course || 0,
+      fuel: formData.value.fuel,
+      consumption: formData.value.consumption || 0, // Send 0 for optional numeric field
+      drive: formData.value.drive,
+      transmission: formData.value.transmission,
+      body: formData.value.body,
+      displacement: formData.value.displacement || 0,
+      horsePower: formData.value.horsePower || 0,
+      condition: formData.value.condition,
+      vinNumber: formData.value.vinNumber,
+      ownershipDocument: formData.value.ownershipDocument || undefined,
+      carImages: formData.value.carImages.length > 0 ? formData.value.carImages : undefined
     };
 
-    const result = await apiService.createCar(carData);
+    const result = await api.cars.createCar(carData);
     console.log('Car created successfully:', result);
     
     message.success('Car added successfully!');
     router.push('/profile');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create car:', error);
-    message.error('Failed to add car. Please try again.');
+    
+    // Handle our custom ApiError
+    if (error.name === 'ApiError') {
+      if (error.isValidationError && error.data?.errors) {
+        // Handle ASP.NET Core validation errors
+        const validationErrors = error.data.errors;
+        for (const [field, messages] of Object.entries(validationErrors)) {
+          if (Array.isArray(messages)) {
+            messages.forEach((msg: string) => message.error(`${field}: ${msg}`));
+          }
+        }
+        return;
+      }
+      
+      // Handle other API errors
+      if (error.data?.message) {
+        message.error(error.data.message);
+        return;
+      }
+      
+      // Fallback for API errors
+      message.error(`Server error: ${error.message}`);
+      return;
+    }
+    
+    // Handle network/other errors
+    message.error('Failed to add car. Please check your connection and try again.');
   } finally {
     loading.value = false;
   }
@@ -167,6 +217,11 @@ const handleSubmit = async () => {
 const handleCancel = () => {
   router.push('/profile');
 };
+
+// Initialize enums when component mounts
+onBeforeMount(async () => {
+  await enumStore.initializeEnums();
+});
 </script>
 
 <template>
@@ -253,7 +308,7 @@ const handleCancel = () => {
               <NInputNumber
                 v-model:value="formData.yearProduction"
                 :min="1900"
-                :max="new Date().getFullYear() + 1"
+                :max="new Date().getFullYear()"
                 placeholder="Year"
               />
             </NFormItem>
@@ -268,7 +323,7 @@ const handleCancel = () => {
             <NFormItem label="Fuel Type" path="fuel">
               <NSelect
                 v-model:value="formData.fuel"
-                :options="FuelOptions"
+                :options="enumStore.fuelOptions"
                 placeholder="Select fuel type"
               />
             </NFormItem>
@@ -278,7 +333,7 @@ const handleCancel = () => {
             <NFormItem label="Drive Type" path="drive">
               <NSelect
                 v-model:value="formData.drive"
-                :options="DriveOptions"
+                :options="enumStore.driveOptions"
                 placeholder="Select drive type"
               />
             </NFormItem>
@@ -288,7 +343,7 @@ const handleCancel = () => {
             <NFormItem label="Transmission" path="transmission">
               <NSelect
                 v-model:value="formData.transmission"
-                :options="TransmissionOptions"
+                :options="enumStore.transmissionOptions"
                 placeholder="Select transmission"
               />
             </NFormItem>
@@ -298,30 +353,29 @@ const handleCancel = () => {
             <NFormItem label="Body Type" path="body">
               <NSelect
                 v-model:value="formData.body"
-                :options="BodyOptions"
+                :options="enumStore.bodyOptions"
                 placeholder="Select body type"
               />
             </NFormItem>
           </NGridItem>
           
           <NGridItem :span="8">
-            <NFormItem label="Displacement (L)">
+            <NFormItem label="Displacement (cm³)" path="displacement">
               <NInputNumber
                 v-model:value="formData.displacement"
-                :min="0.1"
-                :max="10"
-                :precision="1"
+                :min="50"
+                :max="10_000"
                 placeholder="Engine size"
               />
             </NFormItem>
           </NGridItem>
           
           <NGridItem :span="8">
-            <NFormItem label="Horse Power">
+            <NFormItem label="Horse Power" path="horsePower">
               <NInputNumber
                 v-model:value="formData.horsePower"
                 :min="10"
-                :max="2000"
+                :max="2_000"
                 placeholder="HP"
               />
             </NFormItem>
@@ -331,7 +385,7 @@ const handleCancel = () => {
             <NFormItem label="Consumption (L/100km)">
               <NInputNumber
                 v-model:value="formData.consumption"
-                :min="0"
+                :min="0.1"
                 :max="50"
                 :precision="1"
                 placeholder="Fuel consumption"
@@ -345,21 +399,21 @@ const handleCancel = () => {
           </NGridItem>
           
           <NGridItem :span="12">
-            <NFormItem label="Mileage (km)">
+            <NFormItem label="Mileage (km)" path="course">
               <NInputNumber
                 v-model:value="formData.course"
                 :min="0"
-                :max="1000000"
+                :max="1_000_000_000"
                 placeholder="Current mileage"
               />
             </NFormItem>
           </NGridItem>
           
           <NGridItem :span="12">
-            <NFormItem label="Condition" path="condition">
+            <NFormItem label="Condition">
               <NSelect
                 v-model:value="formData.condition"
-                :options="ConditionOptions"
+                :options="enumStore.conditionOptions"
                 placeholder="Select condition"
               />
             </NFormItem>
@@ -371,6 +425,7 @@ const handleCancel = () => {
                 v-model:value="formData.vinNumber"
                 placeholder="Enter 17-character VIN number"
                 clearable
+                minlength="17"
                 maxlength="17"
               />
             </NFormItem>
@@ -382,7 +437,7 @@ const handleCancel = () => {
           </NGridItem>
           
           <NGridItem :span="12">
-            <NFormItem label="Ownership Document">
+            <NFormItem label="Ownership Document" path="ownershipDocument">
               <NUpload
                 v-model:file-list="ownershipDocumentList"
                 accept=".pdf,.doc,.docx,.jpg,.png"

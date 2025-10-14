@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { NCard, NButton, NDivider, NEmpty, NGrid, NGridItem, NTag, NModal, NSpace, useMessage, NSpin } from 'naive-ui';
-import { apiService } from '@/services/apiService';
-import type { CarResponseDto } from '@/api/client';
+import { carsApi, ApiError } from '@/api';
+import type { CarResponseDto } from '@/api';
+import { useEnumStore } from '@/stores/enums.store';
 
 const router = useRouter();
 const message = useMessage();
+const enumStore = useEnumStore();
 
 // State
 const cars = ref<CarResponseDto[]>([]);
@@ -21,11 +23,15 @@ const currentUserId = 1;
 const fetchUserCars = async () => {
   try {
     loading.value = true;
-    cars.value = await apiService.getCarsByOwner(currentUserId);
+    cars.value = await carsApi.getCarsByOwner(currentUserId);
     console.log('Loaded cars from API:', cars.value);
   } catch (error) {
     console.error('Failed to fetch cars:', error);
-    message.error('Failed to load your cars. Please make sure the API server is running.');
+    if (error instanceof ApiError) {
+      message.error(`Failed to load your cars: ${error.message}`);
+    } else {
+      message.error('Failed to load your cars. Please make sure the API server is running.');
+    }
     // Optionally load mock data as fallback
     cars.value = [];
   } finally {
@@ -54,12 +60,16 @@ const deleteCar = async () => {
   if (!carToDelete.value?.carId) return;
   
   try {
-    await apiService.deleteCar(carToDelete.value.carId);
+    await carsApi.deleteCar(carToDelete.value.carId);
     message.success('Car deleted successfully');
     await fetchUserCars(); // Refresh the list
   } catch (error) {
     console.error('Failed to delete car:', error);
-    message.error('Failed to delete car. Please try again.');
+    if (error instanceof ApiError) {
+      message.error(`Failed to delete car: ${error.message}`);
+    } else {
+      message.error('Failed to delete car. Please try again.');
+    }
   } finally {
     showDeleteModal.value = false;
     carToDelete.value = null;
@@ -71,6 +81,21 @@ const cancelDelete = () => {
   showDeleteModal.value = false;
   carToDelete.value = null;
 };
+
+// Helper functions to get display names from enums
+const getEnumDisplayName = (enumType: string, value: string): string => {
+  const enumOptions = enumStore[enumType as keyof typeof enumStore];
+  if (Array.isArray(enumOptions)) {
+    const option = enumOptions.find((opt: any) => opt.value === value);
+    return option?.label || value;
+  }
+  return value;
+};
+
+const getFuelDisplay = (fuelType: string) => getEnumDisplayName('fuelTypes', fuelType);
+const getTransmissionDisplay = (transmissionType: string) => getEnumDisplayName('transmissionTypes', transmissionType);
+const getDriveDisplay = (driveType: string) => getEnumDisplayName('driveTypes', driveType);
+const getConditionDisplay = (conditionType: string) => getEnumDisplayName('conditionTypes', conditionType);
 
 // Load cars on component mount
 onMounted(() => {
@@ -132,25 +157,25 @@ onMounted(() => {
                   </div>
                   <div class="detail-row">
                     <span class="label">Fuel:</span>
-                    <NTag type="success" size="small">{{ car.fuelDisplay }}</NTag>
+                    <NTag type="success" size="small">{{ getFuelDisplay(car.fuel) }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Transmission:</span>
-                    <NTag type="warning" size="small">{{ car.transmissionDisplay }}</NTag>
+                    <NTag type="warning" size="small">{{ getTransmissionDisplay(car.transmission) }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Drive:</span>
-                    <NTag type="default" size="small">{{ car.driveDisplay }}</NTag>
+                    <NTag type="default" size="small">{{ getDriveDisplay(car.drive) }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Condition:</span>
                     <NTag 
-                      :type="car.conditionDisplay === 'Excellent' ? 'success' : 
-                             car.conditionDisplay === 'Good' ? 'info' :
-                             car.conditionDisplay === 'Fair' ? 'warning' : 'error'"
+                      :type="getConditionDisplay(car.condition) === 'Excellent' ? 'success' : 
+                             getConditionDisplay(car.condition) === 'Good' ? 'info' :
+                             getConditionDisplay(car.condition) === 'Fair' ? 'warning' : 'error'"
                       size="small"
                     >
-                      {{ car.conditionDisplay }}
+                      {{ getConditionDisplay(car.condition) }}
                     </NTag>
                   </div>
                   <div class="detail-row">

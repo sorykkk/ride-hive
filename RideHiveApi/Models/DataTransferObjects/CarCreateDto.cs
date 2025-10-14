@@ -18,7 +18,7 @@ namespace RideHiveApi.Models.DataTransferObjects
         public string Model { get; set; } = string.Empty;
 
         [StringLength(50, ErrorMessage = "Version cannot exceed 50 characters")]
-        public string? Version { get; set; }
+        public string? Version { get; set; } = null;
 
         [Required]
         [StringLength(30, ErrorMessage = "Color cannot exceed 30 characters")]
@@ -45,7 +45,7 @@ namespace RideHiveApi.Models.DataTransferObjects
         public string Fuel { get; set; } = string.Empty;
 
         [Range(0.1, 50.0, ErrorMessage = "Consumption must be between 0.1 and 50 l/100km")]
-        public float? Consumption { get; set; }
+        public float? Consumption { get; set; } = null;
 
         [Required]
         [EnumDataType(typeof(DriveTrainLayoutType), ErrorMessage = "Invalid drive train layout type")]
