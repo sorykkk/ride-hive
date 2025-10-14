@@ -35,15 +35,16 @@ export interface CarResponseDto {
   numberSeats: number;
   yearProduction: number;
   course: number;
-  fuel: string;
   consumption?: number;
-  drive: string;
-  transmission: string;
-  body: string;
   displacement: number;
   horsePower: number;
-  condition: string;
   vinNumber: string;
+  // Display values (user-friendly descriptions from backend)
+  fuelDisplay: string;
+  driveDisplay: string;
+  transmissionDisplay: string;
+  bodyDisplay: string;
+  conditionDisplay: string;
   carImages: CarImageData[];
 }
 

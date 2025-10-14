@@ -4,11 +4,9 @@ import { useRouter } from 'vue-router';
 import { NCard, NButton, NDivider, NEmpty, NGrid, NGridItem, NTag, NModal, NSpace, useMessage, NSpin } from 'naive-ui';
 import { carsApi, ApiError } from '@/api';
 import type { CarResponseDto } from '@/api';
-import { useEnumStore } from '@/stores/enums.store';
 
 const router = useRouter();
 const message = useMessage();
-const enumStore = useEnumStore();
 
 // State
 const cars = ref<CarResponseDto[]>([]);
@@ -82,21 +80,6 @@ const cancelDelete = () => {
   carToDelete.value = null;
 };
 
-// Helper functions to get display names from enums
-const getEnumDisplayName = (enumType: string, value: string): string => {
-  const enumOptions = enumStore[enumType as keyof typeof enumStore];
-  if (Array.isArray(enumOptions)) {
-    const option = enumOptions.find((opt: any) => opt.value === value);
-    return option?.label || value;
-  }
-  return value;
-};
-
-const getFuelDisplay = (fuelType: string) => getEnumDisplayName('fuelTypes', fuelType);
-const getTransmissionDisplay = (transmissionType: string) => getEnumDisplayName('transmissionTypes', transmissionType);
-const getDriveDisplay = (driveType: string) => getEnumDisplayName('driveTypes', driveType);
-const getConditionDisplay = (conditionType: string) => getEnumDisplayName('conditionTypes', conditionType);
-
 // Load cars on component mount
 onMounted(() => {
   fetchUserCars();
@@ -157,25 +140,25 @@ onMounted(() => {
                   </div>
                   <div class="detail-row">
                     <span class="label">Fuel:</span>
-                    <NTag type="success" size="small">{{ getFuelDisplay(car.fuel) }}</NTag>
+                    <NTag type="success" size="small">{{ car.fuelDisplay }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Transmission:</span>
-                    <NTag type="warning" size="small">{{ getTransmissionDisplay(car.transmission) }}</NTag>
+                    <NTag type="warning" size="small">{{ car.transmissionDisplay }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Drive:</span>
-                    <NTag type="default" size="small">{{ getDriveDisplay(car.drive) }}</NTag>
+                    <NTag type="default" size="small">{{ car.driveDisplay }}</NTag>
                   </div>
                   <div class="detail-row">
                     <span class="label">Condition:</span>
                     <NTag 
-                      :type="getConditionDisplay(car.condition) === 'Excellent' ? 'success' : 
-                             getConditionDisplay(car.condition) === 'Good' ? 'info' :
-                             getConditionDisplay(car.condition) === 'Fair' ? 'warning' : 'error'"
+                      :type="car.conditionDisplay === 'Brand new' ? 'success' : 
+                             car.conditionDisplay === 'Like new' ? 'info' :
+                             car.conditionDisplay === 'Used' ? 'warning' : 'error'"
                       size="small"
                     >
-                      {{ getConditionDisplay(car.condition) }}
+                      {{ car.conditionDisplay }}
                     </NTag>
                   </div>
                   <div class="detail-row">

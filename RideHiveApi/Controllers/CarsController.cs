@@ -42,7 +42,7 @@ namespace RideHiveApi.Controllers
 
         // GET: api/cars/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<CarItem>> GetCar(int id)
+        public async Task<ActionResult<CarResponseDto>> GetCar(int id)
         {
             try
             {
@@ -53,7 +53,8 @@ namespace RideHiveApi.Controllers
                 if (car == null)
                     return NotFound($"Car with ID {id} not found");
 
-                return Ok(car);
+                var response = CarResponseDto.FromCarItem(car);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -64,7 +65,7 @@ namespace RideHiveApi.Controllers
 
         // GET: api/cars/owner/{ownerId}
         [HttpGet("owner/{ownerId}")]
-        public async Task<ActionResult<IEnumerable<CarItem>>> GetCarsByOwner(int ownerId)
+        public async Task<ActionResult<IEnumerable<CarResponseDto>>> GetCarsByOwner(int ownerId)
         {
             try
             {
@@ -73,7 +74,8 @@ namespace RideHiveApi.Controllers
                     .Where(c => c.OwnerId == ownerId)
                     .ToListAsync();
 
-                return Ok(cars);
+                var response = cars.Select(CarResponseDto.FromCarItem).ToList();
+                return Ok(response);
             }
             catch (Exception ex)
             {

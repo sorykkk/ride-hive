@@ -1,4 +1,6 @@
-using RideHiveApi.Models.Extensions;
+using System;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
@@ -36,6 +38,21 @@ namespace RideHiveApi.Models.DataTransferObjects
         // public int ImageCount { get; set; }
         // public List<string>? ImageUrls { get; set; }
 
+        // Helper method to get enum descriptions
+        private static string GetEnumDescription(Enum value)
+        {
+            var fieldInfo = value.GetType().GetField(value.ToString());
+            if (fieldInfo != null)
+            {
+                var descAttribute = (DescriptionAttribute?)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
+                if (descAttribute != null && !string.IsNullOrEmpty(descAttribute.Description))
+                {
+                    return descAttribute.Description;
+                }
+            }
+            return value.ToString();
+        }
+
         // Static method to convert from CarItem to CarResponseDto
         public static CarResponseDto FromCarItem(CarItem car)
         {
@@ -51,14 +68,15 @@ namespace RideHiveApi.Models.DataTransferObjects
                 NumberSeats = car.NumberSeats,
                 YearProduction = car.YearProduction,
                 Course = car.Course,
-                FuelDisplay = car.Fuel.GetDescription(),           // "Gasoline" instead of "Gasoline"
+                // Display values (for user-friendly display)
+                FuelDisplay = GetEnumDescription(car.Fuel),
                 Consumption = car.Consumption,
-                DriveDisplay = car.Drive.GetDescription(),         // "Front-Wheel" instead of "FWD"
-                TransmissionDisplay = car.Transmission.GetDescription(), // "Manual" instead of "Manual"
-                BodyDisplay = car.Body.GetDescription(),           // "Sedan" instead of "Sedan"
+                DriveDisplay = GetEnumDescription(car.Drive),
+                TransmissionDisplay = GetEnumDescription(car.Transmission),
+                BodyDisplay = GetEnumDescription(car.Body),
                 Displacement = car.Displacement,
                 HorsePower = car.HorsePower,
-                ConditionDisplay = car.Condition.GetDescription(), // "Excellent" instead of "Excellent"
+                ConditionDisplay = GetEnumDescription(car.Condition),
                 VinNumber = car.VinNumber
             };
         }
