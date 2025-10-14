@@ -8,7 +8,7 @@ import {
   SettingsOutline, 
   LogOutOutline,
   ChevronDownOutline ,
-  SendOutline
+  LayersOutline
 } from '@vicons/ionicons5'
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
@@ -27,9 +27,9 @@ const profileOptions = [
     icon: renderIcon(PersonOutline)
   },
   {
-    label: 'Requested rents',
-    key: 'req-rents', 
-    icon: renderIcon(SendOutline)
+    label: 'Owned properties',
+    key: 'owned-prop', 
+    icon: renderIcon(LayersOutline)
   },
   {
     label: 'Settings',
@@ -50,21 +50,6 @@ const profileOptions = [
 // Handle dropdown menu selection
 const handleSelect = (key: string) => {
   router.push({ name: key })
-  // TODO: Add navigation logic here
-  // switch (key) {
-  //   case 'profile':
-  //     router.push({})
-  //     break
-  //   case 'req-rents':
-  //     // Navigate to settings page  
-  //     break
-  //   case 'settings':
-  //     // Navigate to documents page
-  //     break
-  //   case 'logout':
-  //     // Handle logout logic
-  //     break
-  // }
 }
 
 // Mock user data (replace with real user data)
