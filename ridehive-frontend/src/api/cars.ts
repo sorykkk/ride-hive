@@ -43,7 +43,7 @@ export class CarsApi {
 
   // Get cars by owner ID
   async getCarsByOwner(ownerId: number): Promise<CarResponseDto[]> {
-    return apiClient.get<CarResponseDto[]>('/api/Cars', { ownerId });
+    return apiClient.get<CarResponseDto[]>(`/api/Cars/owner/${ownerId}`);
   }
 
   // Create new car with file uploads

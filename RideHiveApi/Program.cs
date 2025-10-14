@@ -4,6 +4,7 @@
 
 using RideHiveApi.Models.Settings;
 using RideHiveApi.Data;
+using RideHiveApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,9 @@ builder.Services.AddControllers();
 // Add Entity Framework with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register image upload service
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
 var apiSettings = builder.Configuration.GetSection("ApiSettings").Get <ApiSettings> ()?? new ApiSettings();
@@ -43,6 +47,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Apply pending migrations on startup (for development)
+// Temporarily disabled to avoid migration conflicts
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -59,6 +64,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+
+// Serve static files (images)
+app.UseStaticFiles();
 
 app.UseAuthorization();
 

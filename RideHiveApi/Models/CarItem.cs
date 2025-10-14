@@ -61,16 +61,19 @@ namespace RideHiveApi.Models
         // Important details
         [Required]
         public ConditionType Condition { get; set; }
-        
+
         [Required]
         [MaxLength(17)]
         [MinLength(17)]
         public string VinNumber { get; set; } = string.Empty;
-        // storing images as byte arrays in database
+        
+        // Multiple images of the car
+        [Required]
         public List<CarImageData> CarImages { get; set; } = new List<CarImageData>();
 
         // Ownership Document - Single document proving ownership
         // storing document as byte array in database        
+        [Required]
         [MaxLength(10 * 1024 * 1024, ErrorMessage = "Document size cannot exceed 10MB")]
         public byte[]? OwnershipDocumentData { get; set; }
         

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { NCard, NButton, NDivider, NEmpty, NGrid, NGridItem, NTag, NModal, NSpace, useMessage, NSpin } from 'naive-ui';
+import { NCard, NButton, NDivider, NEmpty, NGrid, NGridItem, NTag, NModal, NSpace, useMessage, NSpin, NCarousel } from 'naive-ui';
 import { carsApi, ApiError } from '@/api';
-import type { CarResponseDto } from '@/api';
+import type { CarResponseDto, CarImageData } from '@/api';
 
 const router = useRouter();
 const message = useMessage();
@@ -17,12 +17,46 @@ const carToDelete = ref<CarResponseDto | null>(null);
 // Mock user ID - in real app this would come from auth store/context
 const currentUserId = 1;
 
+// Helper function to get image URLs from car images
+const getCarImageUrls = (carImages: CarImageData[]): string[] => {
+  console.log('Processing car images:', carImages);
+  
+  if (!carImages || carImages.length === 0) {
+    console.log('No car images to process');
+    return [];
+  }
+  
+  const baseUrl = 'http://localhost:5030'; // Backend URL
+  
+  return carImages.map((image, index) => {
+    const imageUrl = `${baseUrl}/${image.imagePath}`;
+    console.log(`Image ${index + 1}:`, {
+      carImageId: image.carImageId,
+      imagePath: image.imagePath,
+      contentType: image.imageContentType,
+      fullUrl: imageUrl
+    });
+    return imageUrl;
+  });
+};
+
 // Fetch user's cars
 const fetchUserCars = async () => {
   try {
     loading.value = true;
     cars.value = await carsApi.getCarsByOwner(currentUserId);
     console.log('Loaded cars from API:', cars.value);
+    
+    // Debug: Check if cars have images
+    cars.value.forEach((car, index) => {
+      console.log(`Car ${index + 1} (${car.brand} ${car.model}):`, {
+        carId: car.carId,
+        hasImages: car.carImages && car.carImages.length > 0,
+        imageCount: car.carImages?.length || 0,
+        imageTypes: car.carImages?.map(img => img.imageContentType) || [],
+        firstImagePath: car.carImages?.[0]?.imagePath || 'N/A'
+      });
+    });
   } catch (error) {
     console.error('Failed to fetch cars:', error);
     if (error instanceof ApiError) {
@@ -125,73 +159,97 @@ onMounted(() => {
           >
             <NCard class="car-card" hoverable>
               <div class="car-content">
-                <div class="car-header">
-                  <h3 class="car-title">
-                    {{ car.brand }} {{ car.model }}
-                    <span v-if="car.version" class="car-version">{{ car.version }}</span>
-                  </h3>
-                  <div class="car-year">{{ car.yearProduction }}</div>
-                </div>
-
-                <div class="car-details">
-                  <div class="detail-row">
-                    <span class="label">Color:</span>
-                    <NTag type="info" size="small">{{ car.color }}</NTag>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Fuel:</span>
-                    <NTag type="success" size="small">{{ car.fuelDisplay }}</NTag>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Transmission:</span>
-                    <NTag type="warning" size="small">{{ car.transmissionDisplay }}</NTag>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Drive:</span>
-                    <NTag type="default" size="small">{{ car.driveDisplay }}</NTag>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Condition:</span>
-                    <NTag 
-                      :type="car.conditionDisplay === 'Brand new' ? 'success' : 
-                             car.conditionDisplay === 'Like new' ? 'info' :
-                             car.conditionDisplay === 'Used' ? 'warning' : 'error'"
-                      size="small"
+                <!-- Car Images on the Left -->
+                <div class="car-images">
+                  <div v-if="car.carImages && car.carImages.length > 0" class="image-carousel">
+                    <NCarousel 
+                      :show-dots="car.carImages.length > 1"
+                      :show-arrow="car.carImages.length > 1"
+                      draggable
+                      class="carousel"
                     >
-                      {{ car.conditionDisplay }}
-                    </NTag>
+                      <img 
+                        v-for="(imageUrl, index) in getCarImageUrls(car.carImages)" 
+                        :key="index"
+                        :src="imageUrl"
+                        class="car-image"
+                        :alt="`${car.brand} ${car.model} - Image ${index + 1}`"
+                      />
+                    </NCarousel>
                   </div>
-                  <div class="detail-row">
-                    <span class="label">Mileage:</span>
-                    <span>{{ car.course?.toLocaleString() || 0 }} km</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Power:</span>
-                    <span>{{ car.horsePower || 0 }} HP</span>
+                  <div v-else class="no-image">
+                    <div class="no-image-placeholder">
+                      <span>No Images</span>
+                    </div>
                   </div>
                 </div>
 
-                <!-- <div v-if="car.description" class="car-description">
-                  <p>{{ car.description }}</p>
-                </div> -->
+                <!-- Car Details on the Right -->
+                <div class="car-info">
+                  <div class="car-header">
+                    <h3 class="car-title">
+                      {{ car.brand }} {{ car.model }}
+                      <span v-if="car.version" class="car-version">{{ car.version }}</span>
+                    </h3>
+                    <div class="car-year">{{ car.yearProduction }}</div>
+                  </div>
 
-                <div class="car-actions">
-                  <NSpace>
-                    <NButton 
-                      type="info"
-                      size="small"
-                      @click="editCar(car)"
-                    >
-                      Edit
-                    </NButton>
-                    <NButton 
-                      type="error"
-                      size="small"
-                      @click="showDeleteConfirmation(car)"
-                    >
-                      Delete
-                    </NButton>
-                  </NSpace>
+                  <div class="car-details">
+                    <div class="detail-row">
+                      <span class="label">Color:</span>
+                      <NTag type="info" size="small">{{ car.color }}</NTag>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Fuel:</span>
+                      <NTag type="success" size="small">{{ car.fuelDisplay }}</NTag>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Transmission:</span>
+                      <NTag type="warning" size="small">{{ car.transmissionDisplay }}</NTag>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Drive:</span>
+                      <NTag type="default" size="small">{{ car.driveDisplay }}</NTag>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Condition:</span>
+                      <NTag 
+                        :type="car.conditionDisplay === 'Brand new' ? 'success' : 
+                               car.conditionDisplay === 'Like new' ? 'info' :
+                               car.conditionDisplay === 'Used' ? 'warning' : 'error'"
+                        size="small"
+                      >
+                        {{ car.conditionDisplay }}
+                      </NTag>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Mileage:</span>
+                      <span>{{ car.course?.toLocaleString() || 0 }} km</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Power:</span>
+                      <span>{{ car.horsePower || 0 }} HP</span>
+                    </div>
+                  </div>
+
+                  <div class="car-actions">
+                    <NSpace>
+                      <NButton 
+                        type="info"
+                        size="small"
+                        @click="editCar(car)"
+                      >
+                        Edit
+                      </NButton>
+                      <NButton 
+                        type="error"
+                        size="small"
+                        @click="showDeleteConfirmation(car)"
+                      >
+                        Delete
+                      </NButton>
+                    </NSpace>
+                  </div>
                 </div>
               </div>
             </NCard>
@@ -356,8 +414,78 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
+/* New layout styles for images and content */
+.car-content {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+}
+
+.car-images {
+  flex: 0 0 300px; /* Fixed width for images */
+  height: 200px;
+}
+
+.image-carousel {
+  width: 100%;
+  height: 100%;
+}
+
+.carousel {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.car-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  border: 2px dashed #d0d0d0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.875rem;
+}
+
+.car-info {
+  flex: 1; /* Take remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .car-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .car-images {
+    flex: none;
+    width: 100%;
+    height: 200px;
+  }
+  
   .section-header {
     flex-direction: column;
     align-items: stretch;

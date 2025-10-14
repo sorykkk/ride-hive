@@ -4,6 +4,7 @@ using RideHiveApi.Models.DataTransferObjects;
 using RideHiveApi.Data;
 using RideHiveApi.Models;
 using RideHiveApi.Models.Enums;
+using RideHiveApi.Services;
 
 namespace RideHiveApi.Controllers
 {
@@ -13,11 +14,13 @@ namespace RideHiveApi.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ILogger<CarsController> _logger;
+        private readonly IImageUploadService _imageUploadService;
 
-        public CarsController(AppDbContext context, ILogger<CarsController> logger)
+        public CarsController(AppDbContext context, ILogger<CarsController> logger, IImageUploadService imageUploadService)
         {
             _context = context;
             _logger = logger;
+            _imageUploadService = imageUploadService;
         }
 
         // GET: api/cars
@@ -241,25 +244,21 @@ namespace RideHiveApi.Controllers
                 if (dto.CarId != id)
                     return BadRequest("Car ID mismatch");
 
-                // Validate file type
-                var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-                if (!allowedTypes.Contains(dto.Image.ContentType))
-                    return BadRequest("Only JPEG, PNG, or WEBP images are allowed");
+                // Validate image file
+                if (!_imageUploadService.IsValidImageFile(dto.Image))
+                    return BadRequest("Invalid image file");
 
-                // Validate file size (5MB max)
-                if (dto.Image.Length > 5 * 1024 * 1024)
-                    return BadRequest("Image size cannot exceed 5MB");
+                // Save image to file system
+                var imagePath = await _imageUploadService.SaveImageAsync(dto.Image, "car-images");
 
+                // Save image record to database
                 var imageData = new CarImageData
                 {
                     CarId = id,
+                    ImagePath = imagePath,
                     ImageContentType = dto.Image.ContentType,
                     UploadedAt = DateTime.UtcNow
                 };
-
-                using var ms = new MemoryStream();
-                await dto.Image.CopyToAsync(ms);
-                imageData.ImageData = ms.ToArray();
 
                 _context.CarImages.Add(imageData);
                 await _context.SaveChangesAsync();
@@ -285,7 +284,9 @@ namespace RideHiveApi.Controllers
                 if (image == null)
                     return NotFound("Image not found");
 
-                return File(image.ImageData, image.ImageContentType);
+                // Redirect to static file URL
+                var imageUrl = _imageUploadService.GetImageUrl(image.ImagePath);
+                return Redirect(imageUrl);
             }
             catch (Exception ex)
             {
@@ -306,6 +307,10 @@ namespace RideHiveApi.Controllers
                 if (image == null)
                     return NotFound("Image not found");
 
+                // Delete physical file
+                await _imageUploadService.DeleteImageAsync(image.ImagePath);
+
+                // Delete database record
                 _context.CarImages.Remove(image);
                 await _context.SaveChangesAsync();
 
@@ -382,28 +387,37 @@ namespace RideHiveApi.Controllers
         // Helper method to add multiple car images
         private async Task AddCarImages(int carId, List<IFormFile> images)
         {
-            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-            
             foreach (var image in images)
             {
                 if (image.Length == 0) continue;
                 
-                if (!allowedTypes.Contains(image.ContentType)) continue;
-                
-                if (image.Length > 5 * 1024 * 1024) continue; // Skip if too large
-
-                var imageData = new CarImageData
+                if (!_imageUploadService.IsValidImageFile(image)) 
                 {
-                    CarId = carId,
-                    ImageContentType = image.ContentType,
-                    UploadedAt = DateTime.UtcNow
-                };
+                    _logger.LogWarning($"Invalid image file: {image.FileName}");
+                    continue;
+                }
 
-                using var ms = new MemoryStream();
-                await image.CopyToAsync(ms);
-                imageData.ImageData = ms.ToArray();
+                try
+                {
+                    // Save image to file system
+                    var imagePath = await _imageUploadService.SaveImageAsync(image, "car-images");
 
-                _context.CarImages.Add(imageData);
+                    // Save image record to database
+                    var imageData = new CarImageData
+                    {
+                        CarId = carId,
+                        ImagePath = imagePath,
+                        ImageContentType = image.ContentType,
+                        UploadedAt = DateTime.UtcNow
+                    };
+
+                    _context.CarImages.Add(imageData);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to save image: {image.FileName}");
+                    // Continue with other images even if one fails
+                }
             }
 
             await _context.SaveChangesAsync();

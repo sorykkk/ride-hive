@@ -95,9 +95,8 @@ export interface CarUpdateDto {
 export interface CarImageData {
   carImageId: number;
   carId: number;
-  imageData: Uint8Array;
-  contentType: string;
-  fileName: string;
+  imagePath: string; // Changed from imageData to imagePath
+  imageContentType: string;
   uploadedAt: string;
 }
 

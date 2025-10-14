@@ -134,6 +134,18 @@ const createDynamicRules = (): FormRules => {
         message: 'Document that proves ownership is required',
         trigger: ['blur', 'change']
       }
+    ],
+    carImages: [
+      {
+        required: true,
+        validator: () => {
+          if (!formData.value.carImages || formData.value.carImages.length === 0) {
+            return Promise.reject(new Error('At least one car image is required'));
+          }
+          return Promise.resolve();
+        },
+        trigger: ['blur', 'change']
+      }
     ]
   };
 
@@ -185,6 +197,9 @@ const handleOwnershipDocumentChange = (options: { fileList: UploadFileInfo[] }) 
 const handleCarImagesChange = (options: { fileList: UploadFileInfo[] }) => {
   carImagesList.value = options.fileList;
   formData.value.carImages = options.fileList.map(item => item.file as File).filter(Boolean);
+  
+  // Clear backend validation error when user uploads images
+  clearBackendError('carImages');
 };
 
 // Store backend validation errors
@@ -228,7 +243,7 @@ const handleSubmit = async () => {
       displacement: formData.value.displacement ?? 0,
       horsePower: formData.value.horsePower ?? 0,
       ownershipDocument: formData.value.ownershipDocument || undefined,
-      carImages: formData.value.carImages.length > 0 ? formData.value.carImages : undefined
+      carImages: formData.value.carImages // Required field, should always have at least one image
     };
 
     const result = await api.cars.createCar(carData);
@@ -559,7 +574,7 @@ onBeforeMount(async () => {
           </NGridItem>
           
           <NGridItem :span="12">
-            <NFormItem label="Car Images">
+            <NFormItem label="Car Images" path="carImages">
               <NUpload
                 v-model:file-list="carImagesList"
                 accept="image/*"
@@ -568,7 +583,7 @@ onBeforeMount(async () => {
                 @change="handleCarImagesChange"
                 class="upload-area"
               >
-                <NButton>Upload Car Images</NButton>
+                <NButton>Upload Car Images (Required)</NButton>
               </NUpload>
             </NFormItem>
           </NGridItem>

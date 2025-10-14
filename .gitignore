@@ -26,7 +26,17 @@ Thumbs.db
 *.log
 
 # Migrations
-RideHiveApi/Migrations/
+# Ignore generated snapshot backups
+*Migrations/*.Designer.cs
+*Migrations/*_*.resx
+
+# -----------------------------
+# PostgreSQL related
+# -----------------------------
+# Ignore dumps and backups
+*.sql
+*.dump
+*.backup
 
 ####### Backend #######
 ## A streamlined .gitignore for modern .NET projects

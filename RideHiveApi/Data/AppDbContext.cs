@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using RideHiveApi.Models;
-using RideHiveApi.Models.Extensions;
 
 namespace RideHiveApi.Data 
 {
