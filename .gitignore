@@ -27,8 +27,8 @@ Thumbs.db
 
 # Migrations
 # Ignore generated snapshot backups
-*Migrations/*.Designer.cs
-*Migrations/*_*.resx
+**/Migrations/*.Designer.cs
+**/Migrations/*_*.resx
 
 # -----------------------------
 # PostgreSQL related
