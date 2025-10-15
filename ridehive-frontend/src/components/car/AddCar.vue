@@ -583,7 +583,7 @@ onBeforeMount(async () => {
                 @change="handleCarImagesChange"
                 class="upload-area"
               >
-                <NButton>Upload Car Images (Required)</NButton>
+                <NButton>Upload Car Images</NButton>
               </NUpload>
             </NFormItem>
           </NGridItem>

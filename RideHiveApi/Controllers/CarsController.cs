@@ -216,9 +216,29 @@ namespace RideHiveApi.Controllers
                 if (car == null)
                     return NotFound($"Car with ID {id} not found");
 
+                // Delete all associated image files from filesystem before removing database records
+                if (car.CarImages != null && car.CarImages.Any())
+                {
+                    foreach (var carImage in car.CarImages)
+                    {
+                        try
+                        {
+                            await _imageUploadService.DeleteImageAsync(carImage.ImagePath);
+                            _logger.LogInformation($"Deleted image file: {carImage.ImagePath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to delete image file: {carImage.ImagePath}");
+                            // Continue with deletion even if some files can't be deleted
+                        }
+                    }
+                }
+
+                // Remove car from database (this will cascade delete CarImages due to foreign key)
                 _context.CarItems.Remove(car);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation($"Successfully deleted car ID: {id} and its associated images");
                 return NoContent();
             }
             catch (Exception ex)
