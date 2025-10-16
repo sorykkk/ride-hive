@@ -20,7 +20,7 @@ import {
   type UploadFileInfo
 } from 'naive-ui';
 import { api } from '@/api';
-import { mapBackendFieldToFrontend } from '@/api/cars';
+import { toCamelCase } from '@/api/cars';
 import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
@@ -294,8 +294,8 @@ const handleSubmit = async () => {
           // Process backend validation errors
           for (const [field, messages] of Object.entries(validationErrors)) {
             if (Array.isArray(messages)) {
-              // Convert backend field names to frontend field names
-              const frontendFieldName = mapBackendFieldToFrontend(field);
+              // Convert backend field names to frontend field names dynamically
+              const frontendFieldName = toCamelCase(field);
               backendValidationErrors.value[frontendFieldName] = messages;
               console.log(`Mapped ${field} -> ${frontendFieldName}:`, messages);
             }
