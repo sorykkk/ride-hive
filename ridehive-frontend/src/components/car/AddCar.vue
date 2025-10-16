@@ -250,7 +250,7 @@ const handleSubmit = async () => {
     console.log('Car created successfully:', result);
     
     message.success('Car added successfully!');
-    router.push('/profile');
+    router.push('/owned-properties');
   } catch (error: any) {
     console.error('Failed to create car:', error);
     console.log('Error name:', error.name);
