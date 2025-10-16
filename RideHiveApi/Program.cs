@@ -4,7 +4,9 @@
 
 using RideHiveApi.Models.Settings;
 using RideHiveApi.Data;
+using RideHiveApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,29 @@ builder.Services.AddControllers();
 // Add Entity Framework with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    // Configuration for password
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+
+    // Configuration for user
+    options.User.RequireUniqueEmail = true;
+
+    // Configuration for lockout
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+// Configurare Authentication & Authorization
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
 var apiSettings = builder.Configuration.GetSection("ApiSettings").Get <ApiSettings> ()?? new ApiSettings();
@@ -33,6 +58,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             // Allows GET, POST, PUT, DELETE
             .AllowAnyMethod()
+            .AllowCredentials()
     );
 });
 
@@ -42,12 +68,17 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Apply pending migrations on startup (for development)
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.Migrate(); // This applies any pending migrations
+    await DbInitializer.SeedRoles(scope.ServiceProvider);
 }
+
+// Apply pending migrations on startup (for development)
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     context.Database.Migrate(); // This applies any pending migrations
+// }
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -59,7 +90,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RideHiveApi.Models;
 using RideHiveApi.Models.Extensions;
 
 namespace RideHiveApi.Data 
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<AppUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
@@ -63,10 +64,16 @@ namespace RideHiveApi.Data
             modelBuilder.Entity<CarItem>()
                 .Property(e => e.Body)
                 .HasConversion<string>();
-            
+
             modelBuilder.Entity<CarItem>()
                 .Property(e => e.Condition)
                 .HasConversion<string>();
+                
+            modelBuilder.Entity<AppUser>(entity =>
+            {
+                entity.Property(e => e.Name).HasMaxLength(100);
+                entity.Property(e => e.Surname).HasMaxLength(100);
+            });
         }
     }
 }
