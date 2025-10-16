@@ -3,6 +3,9 @@ import Home from '@/components/Home.vue'
 import About from '@/components/About.vue'
 import CreatePost from '@/components/post/CreatePost.vue'
 import Profile from '@/components/profile/Profile.vue'
+import EditProfile from '@/components/profile/EditProfile.vue'
+import Settings from '@/components/profile/Settings.vue'
+import OwnedProperties from '@/components/property/OwnedProperties.vue'
 import AddCar from '@/components/car/AddCar.vue'
 import EditCar from '@/components/car/EditCar.vue'
 
@@ -28,7 +31,25 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: Profile,
-    meta: { title: 'Profile - RideHive' }
+    meta: { title: 'My Profile - RideHive' }
+  },
+  {
+    path: '/edit-profile',
+    name: 'edit-profile',
+    component: EditProfile,
+    meta: { title: 'Edit Profile - RideHive' }
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: Settings,
+    meta: { title: 'Settings - RideHive' }
+  },
+  {
+    path: '/owned-properties',
+    name: 'owned-prop',
+    component: OwnedProperties,
+    meta: { title: 'Owned Properties - RideHive' }
   },
   {
     path: '/add-car',
