@@ -4,6 +4,7 @@ using RideHiveApi.Models.DataTransferObjects;
 using RideHiveApi.Data;
 using RideHiveApi.Models;
 using RideHiveApi.Models.Enums;
+using RideHiveApi.Services;
 
 namespace RideHiveApi.Controllers
 {
@@ -13,14 +14,16 @@ namespace RideHiveApi.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ILogger<CarsController> _logger;
+        private readonly IImageUploadService _imageUploadService;
 
-        public CarsController(AppDbContext context, ILogger<CarsController> logger)
+        public CarsController(AppDbContext context, ILogger<CarsController> logger, IImageUploadService imageUploadService)
         {
             _context = context;
             _logger = logger;
+            _imageUploadService = imageUploadService;
         }
 
-        // GET: api/cars
+        // GET: api/Cars
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CarResponseDto>>> GetAllCars()
         {
@@ -40,7 +43,7 @@ namespace RideHiveApi.Controllers
             }
         }
 
-        // GET: api/cars/{id}
+        // GET: api/Cars/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<CarResponseDto>> GetCar(int id)
         {
@@ -84,7 +87,7 @@ namespace RideHiveApi.Controllers
             }
         }
 
-        // POST: api/cars
+        // POST: api/Cars
         [HttpPost]
         public async Task<ActionResult<CarItem>> CreateCar([FromForm] CarCreateDto dto)
         {
@@ -97,16 +100,19 @@ namespace RideHiveApi.Controllers
                 if (dto.OwnershipDocument == null || dto.OwnershipDocument.Length == 0)
                     return BadRequest("Ownership document is required");
 
-                var allowedDocTypes = new[] { "application/pdf", "image/jpeg", "image/png" };
-                if (!allowedDocTypes.Contains(dto.OwnershipDocument.ContentType))
-                    return BadRequest("Only PDF, JPEG, or PNG documents are allowed for ownership proof");
+                // Use the image upload service to validate and save the ownership document
+                if (!_imageUploadService.IsValidDocumentFile(dto.OwnershipDocument))
+                    return BadRequest("Invalid ownership document file. Only PDF, DOC, DOCX, JPEG, or PNG files are allowed");
 
                 // Check if VIN already exists
                 var existingCar = await _context.CarItems.FirstOrDefaultAsync(c => c.VinNumber == dto.VinNumber);
                 if (existingCar != null)
                     return Conflict("A car with this VIN number already exists");
 
-                // Create car entity
+                // Save ownership document to filesystem
+                var documentPath = await _imageUploadService.SaveDocumentAsync(dto.OwnershipDocument, "ownership-documents");
+
+                // Create car entity directly - no mapping needed!
                 var car = new CarItem
                 {
                     OwnerId = dto.OwnerId,
@@ -126,14 +132,10 @@ namespace RideHiveApi.Controllers
                     Displacement = dto.Displacement,
                     HorsePower = dto.HorsePower,
                     Condition = Enum.Parse<ConditionType>(dto.Condition),
-                    VinNumber = dto.VinNumber
+                    VinNumber = dto.VinNumber,
+                    OwnershipDocumentPath = documentPath,
+                    OwnershipDocumentContentType = dto.OwnershipDocument?.ContentType
                 };
-
-                // Handle ownership document
-                using var docMs = new MemoryStream();
-                await dto.OwnershipDocument.CopyToAsync(docMs);
-                car.OwnershipDocumentData = docMs.ToArray();
-                car.OwnershipDocumentContentType = dto.OwnershipDocument.ContentType;
 
                 // Add car to context
                 _context.CarItems.Add(car);
@@ -172,23 +174,23 @@ namespace RideHiveApi.Controllers
                 if (car == null)
                     return NotFound($"Car with ID {id} not found");
 
-                // Update only provided fields
-                if (!string.IsNullOrEmpty(dto.Brand)) car.Brand = dto.Brand;
-                if (!string.IsNullOrEmpty(dto.Model)) car.Model = dto.Model;
+                // Update only provided fields - no mapping needed!
+                if (dto.Brand != null) car.Brand = dto.Brand;
+                if (dto.Model != null) car.Model = dto.Model;
                 if (dto.Version != null) car.Version = dto.Version;
-                if (!string.IsNullOrEmpty(dto.Color)) car.Color = dto.Color;
+                if (dto.Color != null) car.Color = dto.Color;
                 if (dto.NumberDoors.HasValue) car.NumberDoors = dto.NumberDoors.Value;
                 if (dto.NumberSeats.HasValue) car.NumberSeats = dto.NumberSeats.Value;
                 if (dto.YearProduction.HasValue) car.YearProduction = dto.YearProduction.Value;
                 if (dto.Course.HasValue) car.Course = dto.Course.Value;
-                if (!string.IsNullOrEmpty(dto.Fuel)) car.Fuel = Enum.Parse<FuelType>(dto.Fuel);
+                if (dto.Fuel != null) car.Fuel = Enum.Parse<FuelType>(dto.Fuel);
                 if (dto.Consumption.HasValue) car.Consumption = dto.Consumption.Value;
-                if (!string.IsNullOrEmpty(dto.Drive)) car.Drive = Enum.Parse<DriveTrainLayoutType>(dto.Drive);
-                if (!string.IsNullOrEmpty(dto.Transmission)) car.Transmission = Enum.Parse<TransmissionType>(dto.Transmission);
-                if (!string.IsNullOrEmpty(dto.Body)) car.Body = Enum.Parse<BodyType>(dto.Body);
+                if (dto.Drive != null) car.Drive = Enum.Parse<DriveTrainLayoutType>(dto.Drive);
+                if (dto.Transmission != null) car.Transmission = Enum.Parse<TransmissionType>(dto.Transmission);
+                if (dto.Body != null) car.Body = Enum.Parse<BodyType>(dto.Body);
                 if (dto.Displacement.HasValue) car.Displacement = dto.Displacement.Value;
                 if (dto.HorsePower.HasValue) car.HorsePower = dto.HorsePower.Value;
-                if (!string.IsNullOrEmpty(dto.Condition)) car.Condition = Enum.Parse<ConditionType>(dto.Condition);
+                if (dto.Condition != null) car.Condition = Enum.Parse<ConditionType>(dto.Condition);
 
                 await _context.SaveChangesAsync();
                 return NoContent();
@@ -213,9 +215,44 @@ namespace RideHiveApi.Controllers
                 if (car == null)
                     return NotFound($"Car with ID {id} not found");
 
+                // Delete all associated image files from filesystem before removing database records
+                if (car.CarImages != null && car.CarImages.Any())
+                {
+                    foreach (var carImage in car.CarImages)
+                    {
+                        try
+                        {
+                            await _imageUploadService.DeleteImageAsync(carImage.ImagePath);
+                            _logger.LogInformation($"Deleted image file: {carImage.ImagePath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to delete image file: {carImage.ImagePath}");
+                            // Continue with deletion even if some files can't be deleted
+                        }
+                    }
+                }
+
+                // Delete ownership document if exists
+                if (!string.IsNullOrEmpty(car.OwnershipDocumentPath))
+                {
+                    try
+                    {
+                        await _imageUploadService.DeleteDocumentAsync(car.OwnershipDocumentPath);
+                        _logger.LogInformation($"Deleted ownership document: {car.OwnershipDocumentPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, $"Failed to delete ownership document: {car.OwnershipDocumentPath}");
+                        // Continue with deletion even if document can't be deleted
+                    }
+                }
+
+                // Remove car from database (this will cascade delete CarImages due to foreign key)
                 _context.CarItems.Remove(car);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation($"Successfully deleted car ID: {id}, its associated images, and ownership document");
                 return NoContent();
             }
             catch (Exception ex)
@@ -241,25 +278,21 @@ namespace RideHiveApi.Controllers
                 if (dto.CarId != id)
                     return BadRequest("Car ID mismatch");
 
-                // Validate file type
-                var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-                if (!allowedTypes.Contains(dto.Image.ContentType))
-                    return BadRequest("Only JPEG, PNG, or WEBP images are allowed");
+                // Validate image file
+                if (!_imageUploadService.IsValidImageFile(dto.Image))
+                    return BadRequest("Invalid image file");
 
-                // Validate file size (5MB max)
-                if (dto.Image.Length > 5 * 1024 * 1024)
-                    return BadRequest("Image size cannot exceed 5MB");
+                // Save image to file system
+                var imagePath = await _imageUploadService.SaveImageAsync(dto.Image, "car-images");
 
+                // Save image record to database
                 var imageData = new CarImageData
                 {
                     CarId = id,
+                    ImagePath = imagePath,
                     ImageContentType = dto.Image.ContentType,
                     UploadedAt = DateTime.UtcNow
                 };
-
-                using var ms = new MemoryStream();
-                await dto.Image.CopyToAsync(ms);
-                imageData.ImageData = ms.ToArray();
 
                 _context.CarImages.Add(imageData);
                 await _context.SaveChangesAsync();
@@ -285,7 +318,9 @@ namespace RideHiveApi.Controllers
                 if (image == null)
                     return NotFound("Image not found");
 
-                return File(image.ImageData, image.ImageContentType);
+                // Redirect to static file URL
+                var imageUrl = _imageUploadService.GetImageUrl(image.ImagePath);
+                return Redirect(imageUrl);
             }
             catch (Exception ex)
             {
@@ -306,6 +341,10 @@ namespace RideHiveApi.Controllers
                 if (image == null)
                     return NotFound("Image not found");
 
+                // Delete physical file
+                await _imageUploadService.DeleteImageAsync(image.ImagePath);
+
+                // Delete database record
                 _context.CarImages.Remove(image);
                 await _context.SaveChangesAsync();
 
@@ -334,19 +373,20 @@ namespace RideHiveApi.Controllers
                 if (dto.CarId != id)
                     return BadRequest("Car ID mismatch");
 
-                // Validate file type
-                var allowedTypes = new[] { "application/pdf", "image/jpeg", "image/png" };
-                if (!allowedTypes.Contains(dto.Document.ContentType))
-                    return BadRequest("Only PDF, JPEG, or PNG documents are allowed");
+                // Validate and save ownership document
+                if (!_imageUploadService.IsValidDocumentFile(dto.Document))
+                    return BadRequest("Invalid document file. Only PDF, DOC, DOCX, JPEG, or PNG files are allowed");
 
-                // Validate file size (10MB max)
-                if (dto.Document.Length > 10 * 1024 * 1024)
-                    return BadRequest("Document size cannot exceed 10MB");
+                // Delete old document if exists
+                if (!string.IsNullOrEmpty(car.OwnershipDocumentPath))
+                {
+                    await _imageUploadService.DeleteDocumentAsync(car.OwnershipDocumentPath);
+                }
 
-                using var ms = new MemoryStream();
-                await dto.Document.CopyToAsync(ms);
+                // Save new document
+                var documentPath = await _imageUploadService.SaveDocumentAsync(dto.Document, "ownership-documents");
                 
-                car.OwnershipDocumentData = ms.ToArray();
+                car.OwnershipDocumentPath = documentPath;
                 car.OwnershipDocumentContentType = dto.Document.ContentType;
 
                 await _context.SaveChangesAsync();
@@ -367,10 +407,12 @@ namespace RideHiveApi.Controllers
             try
             {
                 var car = await _context.CarItems.FindAsync(id);
-                if (car == null || car.OwnershipDocumentData == null)
+                if (car == null || string.IsNullOrEmpty(car.OwnershipDocumentPath))
                     return NotFound("Document not found");
 
-                return File(car.OwnershipDocumentData, car.OwnershipDocumentContentType ?? "application/pdf");
+                // Redirect to static file URL
+                var documentUrl = _imageUploadService.GetDocumentUrl(car.OwnershipDocumentPath);
+                return Redirect(documentUrl);
             }
             catch (Exception ex)
             {
@@ -382,28 +424,37 @@ namespace RideHiveApi.Controllers
         // Helper method to add multiple car images
         private async Task AddCarImages(int carId, List<IFormFile> images)
         {
-            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-            
             foreach (var image in images)
             {
                 if (image.Length == 0) continue;
                 
-                if (!allowedTypes.Contains(image.ContentType)) continue;
-                
-                if (image.Length > 5 * 1024 * 1024) continue; // Skip if too large
-
-                var imageData = new CarImageData
+                if (!_imageUploadService.IsValidImageFile(image)) 
                 {
-                    CarId = carId,
-                    ImageContentType = image.ContentType,
-                    UploadedAt = DateTime.UtcNow
-                };
+                    _logger.LogWarning($"Invalid image file: {image.FileName}");
+                    continue;
+                }
 
-                using var ms = new MemoryStream();
-                await image.CopyToAsync(ms);
-                imageData.ImageData = ms.ToArray();
+                try
+                {
+                    // Save image to file system
+                    var imagePath = await _imageUploadService.SaveImageAsync(image, "car-images");
 
-                _context.CarImages.Add(imageData);
+                    // Save image record to database
+                    var imageData = new CarImageData
+                    {
+                        CarId = carId,
+                        ImagePath = imagePath,
+                        ImageContentType = image.ContentType,
+                        UploadedAt = DateTime.UtcNow
+                    };
+
+                    _context.CarImages.Add(imageData);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to save image: {image.FileName}");
+                    // Continue with other images even if one fails
+                }
             }
 
             await _context.SaveChangesAsync();

@@ -80,8 +80,9 @@ namespace RideHiveApi.Models.DataTransferObjects
         [Required(ErrorMessage = "Ownership document is required")]
         public IFormFile OwnershipDocument { get; set; } = null!;
 
-        // Car images upload (optional during creation)
-        [Required]
+        // Car images upload (required during creation)
+        [Required(ErrorMessage = "At least one car image is required")]
+        [MinLength(1, ErrorMessage = "At least one car image is required")]
         public List<IFormFile> CarImages { get; set; } = new List<IFormFile>();
     }
 }

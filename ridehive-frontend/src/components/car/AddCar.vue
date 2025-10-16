@@ -20,7 +20,7 @@ import {
   type UploadFileInfo
 } from 'naive-ui';
 import { api } from '@/api';
-import { mapBackendFieldToFrontend } from '@/api/cars';
+import { toCamelCase } from '@/api/cars';
 import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
@@ -134,6 +134,18 @@ const createDynamicRules = (): FormRules => {
         message: 'Document that proves ownership is required',
         trigger: ['blur', 'change']
       }
+    ],
+    carImages: [
+      {
+        required: true,
+        validator: () => {
+          if (!formData.value.carImages || formData.value.carImages.length === 0) {
+            return Promise.reject(new Error('At least one car image is required'));
+          }
+          return Promise.resolve();
+        },
+        trigger: ['blur', 'change']
+      }
     ]
   };
 
@@ -185,6 +197,9 @@ const handleOwnershipDocumentChange = (options: { fileList: UploadFileInfo[] }) 
 const handleCarImagesChange = (options: { fileList: UploadFileInfo[] }) => {
   carImagesList.value = options.fileList;
   formData.value.carImages = options.fileList.map(item => item.file as File).filter(Boolean);
+  
+  // Clear backend validation error when user uploads images
+  clearBackendError('carImages');
 };
 
 // Store backend validation errors
@@ -228,7 +243,7 @@ const handleSubmit = async () => {
       displacement: formData.value.displacement ?? 0,
       horsePower: formData.value.horsePower ?? 0,
       ownershipDocument: formData.value.ownershipDocument || undefined,
-      carImages: formData.value.carImages.length > 0 ? formData.value.carImages : undefined
+      carImages: formData.value.carImages // Required field, should always have at least one image
     };
 
     const result = await api.cars.createCar(carData);
@@ -279,8 +294,8 @@ const handleSubmit = async () => {
           // Process backend validation errors
           for (const [field, messages] of Object.entries(validationErrors)) {
             if (Array.isArray(messages)) {
-              // Convert backend field names to frontend field names
-              const frontendFieldName = mapBackendFieldToFrontend(field);
+              // Convert backend field names to frontend field names dynamically
+              const frontendFieldName = toCamelCase(field);
               backendValidationErrors.value[frontendFieldName] = messages;
               console.log(`Mapped ${field} -> ${frontendFieldName}:`, messages);
             }
@@ -559,7 +574,7 @@ onBeforeMount(async () => {
           </NGridItem>
           
           <NGridItem :span="12">
-            <NFormItem label="Car Images">
+            <NFormItem label="Car Images" path="carImages">
               <NUpload
                 v-model:file-list="carImagesList"
                 accept="image/*"

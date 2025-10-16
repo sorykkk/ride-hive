@@ -4,7 +4,6 @@ using System.Reflection;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
-    //todo: correct this class for better representation
     public class CarResponseDto
     {
         public int CarId { get; set; }
@@ -33,10 +32,8 @@ namespace RideHiveApi.Models.DataTransferObjects
         public string ConditionDisplay { get; set; } = string.Empty;   // "Excellent", "Good", etc.
         public string VinNumber { get; set; } = string.Empty;
         
-        // Images count or URLs
-        //todo: make it get from table
-        // public int ImageCount { get; set; }
-        // public List<string>? ImageUrls { get; set; }
+        // Car images
+        public List<CarImageData> CarImages { get; set; } = new List<CarImageData>();
 
         // Helper method to get enum descriptions
         private static string GetEnumDescription(Enum value)
@@ -77,7 +74,8 @@ namespace RideHiveApi.Models.DataTransferObjects
                 Displacement = car.Displacement,
                 HorsePower = car.HorsePower,
                 ConditionDisplay = GetEnumDescription(car.Condition),
-                VinNumber = car.VinNumber
+                VinNumber = car.VinNumber,
+                CarImages = car.CarImages?.ToList() ?? new List<CarImageData>()
             };
         }
     }

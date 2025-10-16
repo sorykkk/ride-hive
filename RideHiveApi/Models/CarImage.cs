@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using RideHiveApi.Models.Validation;
-using RideHiveApi.Models.Enums;
 
 namespace RideHiveApi.Models
 {
@@ -11,8 +9,8 @@ namespace RideHiveApi.Models
         
         public int CarId { get; set; }
 
-        [MaxLength(5 * 1024 * 1024, ErrorMessage = "Image size cannot exceed 5MB")]
-        public byte[] ImageData { get; set; } = Array.Empty<byte>();
+        [MaxLength(500)]
+        public string ImagePath { get; set; } = string.Empty;
 
         [MaxLength(50)]
         public string ImageContentType { get; set; } = string.Empty;

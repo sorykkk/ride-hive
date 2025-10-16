@@ -1,33 +1,14 @@
 //CRUD operations on cars
 import { apiClient } from './base';
-import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto } from './types';
+import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto, CarImageData } from './types';
 
-// Map backend field names to frontend field names
-export const mapBackendFieldToFrontend = (backendField: string): string => {
-  const fieldMap: Record<string, string> = {
-    'OwnerId': 'ownerId',
-    'Brand': 'brand',
-    'Model': 'model',
-    'Version': 'version',
-    'Color': 'color',
-    'NumberDoors': 'numberDoors',
-    'NumberSeats': 'numberSeats',
-    'YearProduction': 'yearProduction',
-    'Course': 'course',
-    'Fuel': 'fuel',
-    'Consumption': 'consumption',
-    'Drive': 'drive',
-    'Transmission': 'transmission',
-    'Body': 'body',
-    'Displacement': 'displacement',
-    'HorsePower': 'horsePower',
-    'Condition': 'condition',
-    'VinNumber': 'vinNumber',
-    'OwnershipDocument': 'ownershipDocument',
-    'CarImages': 'carImages'
-  };
-  
-  return fieldMap[backendField] || backendField.toLowerCase();
+// Dynamic case conversion utilities - no more manual field mapping!
+export const toCamelCase = (str: string): string => {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+export const toPascalCase = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 export class CarsApi {
@@ -43,52 +24,31 @@ export class CarsApi {
 
   // Get cars by owner ID
   async getCarsByOwner(ownerId: number): Promise<CarResponseDto[]> {
-    return apiClient.get<CarResponseDto[]>('/api/Cars', { ownerId });
+    return apiClient.get<CarResponseDto[]>(`/api/Cars/owner/${ownerId}`);
   }
 
   // Create new car with file uploads
   async createCar(carData: CarCreateDto): Promise<CarItem> {
     const formData = new FormData();
 
-    // Add all car properties to FormData
-    formData.append('OwnerId', carData.ownerId.toString());
-    formData.append('Brand', carData.brand);
-    formData.append('Model', carData.model);
-    
-    if (carData.version) {
-      formData.append('Version', carData.version);
-    }
-    
-    formData.append('Color', carData.color);
-    formData.append('NumberDoors', carData.numberDoors.toString());
-    formData.append('NumberSeats', carData.numberSeats.toString());
-    formData.append('YearProduction', carData.yearProduction.toString());
-    formData.append('Course', carData.course.toString());
-    formData.append('Fuel', carData.fuel);
-    
-    if (carData.consumption !== undefined && carData.consumption !== null) {
-      formData.append('Consumption', carData.consumption.toString());
-    }
-    
-    formData.append('Drive', carData.drive);
-    formData.append('Transmission', carData.transmission);
-    formData.append('Body', carData.body);
-    formData.append('Displacement', carData.displacement.toString());
-    formData.append('HorsePower', carData.horsePower.toString());
-    formData.append('Condition', carData.condition);
-    formData.append('VinNumber', carData.vinNumber);
-
-    // Add ownership document if provided
-    if (carData.ownershipDocument) {
-      formData.append('OwnershipDocument', carData.ownershipDocument);
-    }
-
-    // Add car images if provided
-    if (carData.carImages && carData.carImages.length > 0) {
-      carData.carImages.forEach((image) => {
-        formData.append(`CarImages`, image);
-      });
-    }
+    // Dynamically add all properties - fully automated!
+    Object.entries(carData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        // Convert camelCase to PascalCase for backend
+        const backendKey = toPascalCase(key);
+        
+        if (key === 'carImages' && Array.isArray(value)) {
+          // Handle multiple files
+          value.forEach(file => formData.append('CarImages', file));
+        } else if (key === 'ownershipDocument' && value instanceof File) {
+          // Handle single file
+          formData.append('OwnershipDocument', value);
+        } else if (!(value instanceof File) && !Array.isArray(value)) {
+          // Handle primitive values
+          formData.append(backendKey, value.toString());
+        }
+      }
+    });
 
     return apiClient.postFormData<CarItem>('/api/Cars', formData);
   }
@@ -101,6 +61,27 @@ export class CarsApi {
   // Delete car
   async deleteCar(id: number): Promise<void> {
     return apiClient.delete<void>(`/api/Cars/${id}`);
+  }
+
+  // Helper function to get image URLs from car images
+  getCarImageUrls(carImages: CarImageData[], baseUrl: string = 'http://localhost:5030'): string[] {
+    console.log('Processing car images:', carImages);
+    
+    if (!carImages || carImages.length === 0) {
+      console.log('No car images to process');
+      return [];
+    }
+    
+    return carImages.map((image, index) => {
+      const imageUrl = `${baseUrl}/${image.imagePath}`;
+      console.log(`Image ${index + 1}:`, {
+        carImageId: image.carImageId,
+        imagePath: image.imagePath,
+        contentType: image.imageContentType,
+        fullUrl: imageUrl
+      });
+      return imageUrl;
+    });
   }
 }
 
