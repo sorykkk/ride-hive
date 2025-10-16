@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { NCard, NButton, NDivider, NEmpty, NGrid, NGridItem, NTag, NModal, NSpace, useMessage, NSpin, NCarousel, NIcon } from 'naive-ui';
-import { CarSportOutline, AddOutline, CreateOutline, TrashOutline, CalendarOutline, SpeedometerOutline, CarOutline } from '@vicons/ionicons5';
+import { NCard, NButton, NEmpty, NGrid, NGridItem, NTag, NModal, useMessage, NSpin, NCarousel, NIcon } from 'naive-ui';
+import { AddOutline, CreateOutline, TrashOutline, CalendarOutline, SpeedometerOutline, CarOutline } from '@vicons/ionicons5';
 import { carsApi, ApiError } from '@/api';
 import type { CarResponseDto, CarImageData } from '@/api';
 
@@ -163,7 +163,8 @@ onMounted(() => {
                       v-if="car.carImages.length > 1"
                       show-dots
                       show-arrow
-                      style="height: 300px; border-radius: 8px; overflow: hidden;"
+                      :style="{ height: '100%', width: '100%' }"
+                      class="car-carousel"
                     >
                       <img 
                         v-for="(imageUrl, index) in getCarImageUrls(car.carImages)"
@@ -171,7 +172,7 @@ onMounted(() => {
                         :src="imageUrl" 
                         :alt="`${car.brand} ${car.model} - Image ${index + 1}`"
                         class="car-image"
-                        @error="$event.target.src = '/api/placeholder/300/200'"
+                        @error="($event.target as HTMLImageElement).src = '/api/placeholder/300/200'"
                       />
                     </NCarousel>
                     <img 
@@ -179,7 +180,7 @@ onMounted(() => {
                       :src="getCarImageUrls(car.carImages)[0]" 
                       :alt="`${car.brand} ${car.model}`"
                       class="car-image single-image"
-                      @error="$event.target.src = '/api/placeholder/300/200'"
+                      @error="($event.target as HTMLImageElement).src = '/api/placeholder/300/200'"
                     />
                   </div>
                   <div v-else class="no-image-placeholder">
@@ -261,12 +262,6 @@ onMounted(() => {
                     <NTag size="small" type="success">{{ car.conditionDisplay }}</NTag>
                     <NTag size="small" type="warning">{{ car.numberDoors }} doors</NTag>
                     <NTag size="small" type="default">{{ car.numberSeats }} seats</NTag>
-                  </div>
-
-                  <!-- VIN Number (Optional) -->
-                  <div class="car-vin" v-if="car.vinNumber">
-                    <span class="vin-label">VIN:</span>
-                    <span class="vin-value">{{ car.vinNumber }}</span>
                   </div>
                 </div>
               </div>
@@ -379,25 +374,36 @@ onMounted(() => {
 }
 
 .car-images {
-  flex: 0 0 300px;
+  flex: 0 0 350px;
   height: 300px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .carousel-container {
+  width: 100%;
   height: 100%;
+  position: relative;
+}
+
+.car-carousel {
   border-radius: 8px;
   overflow: hidden;
 }
 
 .car-image {
   width: 100%;
-  height: 100%;
+  height: 300px;
   object-fit: cover;
-  border-radius: 8px;
+  display: block;
 }
 
 .single-image {
+  width: 100%;
   height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .no-image-placeholder {
@@ -476,29 +482,6 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: auto;
-}
-
-.car-vin {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background-color: #f8fafc;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  border: 1px solid #e2e8f0;
-}
-
-.vin-label {
-  font-weight: 600;
-  color: #4a5568;
-  margin-right: 8px;
-}
-
-.vin-value {
-  font-family: 'Courier New', monospace;
-  color: #2d3748;
-  background-color: #edf2f7;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 /* Responsive Design */
