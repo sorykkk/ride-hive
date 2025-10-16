@@ -13,13 +13,17 @@ declare module 'vue' {
     CarProperty: typeof import('./src/components/profile/CarProperty.vue')['default']
     CreatePost: typeof import('./src/components/post/CreatePost.vue')['default']
     EditCar: typeof import('./src/components/car/EditCar.vue')['default']
+    EditProfile: typeof import('./src/components/profile/EditProfile.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
+    OwnedProperties: typeof import('./src/components/property/OwnedProperties.vue')['default']
     Profile: typeof import('./src/components/profile/Profile.vue')['default']
     ProfileDropdown: typeof import('./src/components/navbar/ProfileDropdown.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBar: typeof import('./src/components/navbar/SearchBar.vue')['default']
+    Settings: typeof import('./src/components/profile/Settings.vue')['default']
     TopNavigationBar: typeof import('./src/components/navbar/TopNavigationBar.vue')['default']
+    UserInfo: typeof import('./src/components/profile/UserInfo.vue')['default']
   }
 }
