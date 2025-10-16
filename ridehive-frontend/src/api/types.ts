@@ -1,4 +1,4 @@
-// Type definitions for API models
+// Type definitions for API models - matching backend JSON response (camelCase)
 export interface CarItem {
   carId: number;
   ownerId: number;
@@ -20,7 +20,7 @@ export interface CarItem {
   condition: string;
   vinNumber: string;
   carImages: CarImageData[];
-  ownershipDocumentData?: Uint8Array;
+  ownershipDocumentPath?: string;
   ownershipDocumentContentType?: string;
 }
 

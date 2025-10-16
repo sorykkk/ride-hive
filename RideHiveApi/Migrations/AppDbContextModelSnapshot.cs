@@ -119,10 +119,10 @@ namespace RideHiveApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<byte[]>("OwnershipDocumentData")
+                    b.Property<string>("OwnershipDocumentPath")
                         .IsRequired()
-                        .HasMaxLength(10485760)
-                        .HasColumnType("bytea");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Transmission")
                         .IsRequired()

@@ -6,7 +6,10 @@ namespace RideHiveApi.Services
         private readonly ILogger<ImageUploadService> _logger;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
         private readonly string[] _allowedMimeTypes = { "image/jpeg", "image/png", "image/gif", "image/webp" };
+        private readonly string[] _allowedDocumentExtensions = { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
+        private readonly string[] _allowedDocumentMimeTypes = { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "image/jpeg", "image/png" };
         private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+        private const long MaxDocumentSize = 10 * 1024 * 1024; // 10MB for documents
 
         public ImageUploadService(IWebHostEnvironment environment, ILogger<ImageUploadService> logger)
         {
@@ -100,6 +103,94 @@ namespace RideHiveApi.Services
 
             // Return URL path for serving static files
             return $"/{imagePath.Replace("\\", "/")}";
+        }
+
+        public async Task<string> SaveDocumentAsync(IFormFile documentFile, string folder = "ownership-documents")
+        {
+            if (!IsValidDocumentFile(documentFile))
+            {
+                throw new ArgumentException("Invalid document file");
+            }
+
+            try
+            {
+                // Create uploads directory if it doesn't exist
+                var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", folder);
+                Directory.CreateDirectory(uploadsPath);
+
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(documentFile.FileName).ToLowerInvariant()}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // Save the file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await documentFile.CopyToAsync(stream);
+                }
+
+                // Return relative path for database storage
+                var relativePath = Path.Combine("uploads", folder, fileName).Replace("\\", "/");
+                _logger.LogInformation($"Document saved successfully: {relativePath}");
+                
+                return relativePath;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to save document: {documentFile.FileName}");
+                throw;
+            }
+        }
+
+        public Task<bool> DeleteDocumentAsync(string documentPath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(documentPath))
+                    return Task.FromResult(false);
+
+                var fullPath = Path.Combine(_environment.WebRootPath, documentPath.Replace("/", "\\"));
+                
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                    _logger.LogInformation($"Document deleted successfully: {documentPath}");
+                    return Task.FromResult(true);
+                }
+                
+                return Task.FromResult(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to delete document: {documentPath}");
+                return Task.FromResult(false);
+            }
+        }
+
+        public bool IsValidDocumentFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return false;
+
+            if (file.Length > MaxDocumentSize)
+                return false;
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!_allowedDocumentExtensions.Contains(extension))
+                return false;
+
+            if (!_allowedDocumentMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                return false;
+
+            return true;
+        }
+
+        public string GetDocumentUrl(string documentPath)
+        {
+            if (string.IsNullOrEmpty(documentPath))
+                return string.Empty;
+
+            // Return URL path for serving static files
+            return $"/{documentPath.Replace("\\", "/")}";
         }
     }
 }

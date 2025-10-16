@@ -47,7 +47,6 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Apply pending migrations on startup (for development)
-// Temporarily disabled to avoid migration conflicts
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
