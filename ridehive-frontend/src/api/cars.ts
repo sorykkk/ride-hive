@@ -1,6 +1,6 @@
 //CRUD operations on cars
 import { apiClient } from './base';
-import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto } from './types';
+import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto, CarImageData } from './types';
 
 // Dynamic case conversion utilities - no more manual field mapping!
 export const toCamelCase = (str: string): string => {
@@ -61,6 +61,27 @@ export class CarsApi {
   // Delete car
   async deleteCar(id: number): Promise<void> {
     return apiClient.delete<void>(`/api/Cars/${id}`);
+  }
+
+  // Helper function to get image URLs from car images
+  getCarImageUrls(carImages: CarImageData[], baseUrl: string = 'http://localhost:5030'): string[] {
+    console.log('Processing car images:', carImages);
+    
+    if (!carImages || carImages.length === 0) {
+      console.log('No car images to process');
+      return [];
+    }
+    
+    return carImages.map((image, index) => {
+      const imageUrl = `${baseUrl}/${image.imagePath}`;
+      console.log(`Image ${index + 1}:`, {
+        carImageId: image.carImageId,
+        imagePath: image.imagePath,
+        contentType: image.imageContentType,
+        fullUrl: imageUrl
+      });
+      return imageUrl;
+    });
   }
 }
 

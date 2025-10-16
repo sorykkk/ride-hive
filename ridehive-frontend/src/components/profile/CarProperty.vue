@@ -17,59 +17,7 @@ const carToDelete = ref<CarResponseDto | null>(null);
 // Mock user ID - in real app this would come from auth store/context
 const currentUserId = 1;
 
-// Helper function to get image URLs from car images
-const getCarImageUrls = (carImages: CarImageData[]): string[] => {
-  console.log('Processing car images:', carImages);
-  
-  if (!carImages || carImages.length === 0) {
-    console.log('No car images to process');
-    return [];
-  }
-  
-  const baseUrl = 'http://localhost:5030'; // Backend URL
-  
-  return carImages.map((image, index) => {
-    const imageUrl = `${baseUrl}/${image.imagePath}`;
-    console.log(`Image ${index + 1}:`, {
-      carImageId: image.carImageId,
-      imagePath: image.imagePath,
-      contentType: image.imageContentType,
-      fullUrl: imageUrl
-    });
-    return imageUrl;
-  });
-};
 
-// Fetch user's cars
-const fetchUserCars = async () => {
-  try {
-    loading.value = true;
-    cars.value = await carsApi.getCarsByOwner(currentUserId);
-    console.log('Loaded cars from API:', cars.value);
-    
-    // Debug: Check if cars have images
-    cars.value.forEach((car, index) => {
-      console.log(`Car ${index + 1} (${car.brand} ${car.model}):`, {
-        carId: car.carId,
-        hasImages: car.carImages && car.carImages.length > 0,
-        imageCount: car.carImages?.length || 0,
-        imageTypes: car.carImages?.map(img => img.imageContentType) || [],
-        firstImagePath: car.carImages?.[0]?.imagePath || 'N/A'
-      });
-    });
-  } catch (error) {
-    console.error('Failed to fetch cars:', error);
-    if (error instanceof ApiError) {
-      message.error(`Failed to load your cars: ${error.message}`);
-    } else {
-      message.error('Failed to load your cars. Please make sure the API server is running.');
-    }
-    // Optionally load mock data as fallback
-    cars.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
 
 // Navigate to add car page
 const addCar = () => {
@@ -112,6 +60,42 @@ const deleteCar = async () => {
 const cancelDelete = () => {
   showDeleteModal.value = false;
   carToDelete.value = null;
+};
+
+// Fetch user's cars
+const fetchUserCars = async () => {
+  try {
+    loading.value = true;
+    cars.value = await carsApi.getCarsByOwner(currentUserId);
+    console.log('Loaded cars from API:', cars.value);
+    
+    // Debug: Check if cars have images
+    cars.value.forEach((car, index) => {
+      console.log(`Car ${index + 1} (${car.brand} ${car.model}):`, {
+        carId: car.carId,
+        hasImages: car.carImages && car.carImages.length > 0,
+        imageCount: car.carImages?.length || 0,
+        imageTypes: car.carImages?.map(img => img.imageContentType) || [],
+        firstImagePath: car.carImages?.[0]?.imagePath || 'N/A'
+      });
+    });
+  } catch (error) {
+    console.error('Failed to fetch cars:', error);
+    if (error instanceof ApiError) {
+      message.error(`Failed to load your cars: ${error.message}`);
+    } else {
+      message.error('Failed to load your cars. Please make sure the API server is running.');
+    }
+    // Optionally load mock data as fallback
+    cars.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Helper function to get image URLs from car images
+const getCarImageUrls = (carImages: CarImageData[]): string[] => {
+  return carsApi.getCarImageUrls(carImages);
 };
 
 // Load cars on component mount
