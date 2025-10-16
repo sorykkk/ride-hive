@@ -237,11 +237,19 @@ onMounted(() => {
                       </div>
                       <div class="spec-item">
                         <span class="spec-label">Fuel:</span>
-                        <span>{{ car.fuel }}</span>
+                        <span>{{ car.fuelDisplay }}</span>
                       </div>
                       <div class="spec-item">
                         <span class="spec-label">Transmission:</span>
-                        <span>{{ car.transmission }}</span>
+                        <span>{{ car.transmissionDisplay }}</span>
+                      </div>
+                      <div class="spec-item">
+                        <span class="spec-label">Engine:</span>
+                        <span>{{ car.displacement }}L - {{ car.horsePower }}HP</span>
+                      </div>
+                      <div class="spec-item" v-if="car.consumption">
+                        <span class="spec-label">Consumption:</span>
+                        <span>{{ car.consumption }}L/100km</span>
                       </div>
                     </div>
                   </div>
@@ -249,9 +257,16 @@ onMounted(() => {
                   <!-- Additional Info Tags -->
                   <div class="car-tags">
                     <NTag size="small" type="info">{{ car.color }}</NTag>
-                    <NTag size="small" type="default">{{ car.body }}</NTag>
-                    <NTag size="small" type="success">{{ car.condition }}</NTag>
+                    <NTag size="small" type="default">{{ car.bodyDisplay }}</NTag>
+                    <NTag size="small" type="success">{{ car.conditionDisplay }}</NTag>
                     <NTag size="small" type="warning">{{ car.numberDoors }} doors</NTag>
+                    <NTag size="small" type="default">{{ car.numberSeats }} seats</NTag>
+                  </div>
+
+                  <!-- VIN Number (Optional) -->
+                  <div class="car-vin" v-if="car.vinNumber">
+                    <span class="vin-label">VIN:</span>
+                    <span class="vin-value">{{ car.vinNumber }}</span>
                   </div>
                 </div>
               </div>
@@ -437,7 +452,7 @@ onMounted(() => {
 
 .spec-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -463,7 +478,36 @@ onMounted(() => {
   margin-top: auto;
 }
 
+.car-vin {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  border: 1px solid #e2e8f0;
+}
+
+.vin-label {
+  font-weight: 600;
+  color: #4a5568;
+  margin-right: 8px;
+}
+
+.vin-value {
+  font-family: 'Courier New', monospace;
+  color: #2d3748;
+  background-color: #edf2f7;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .spec-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .owned-properties-container {
     padding: 16px;
