@@ -21,15 +21,20 @@ namespace RideHiveApi.Models.DataTransferObjects
         
         // Specifications - these will show user-friendly descriptions
         public string FuelDisplay { get; set; } = string.Empty;        // "Gasoline", "Diesel", etc.
+        public string Fuel { get; set; } = string.Empty;               // "Petrol", "Diesel", etc. (enum values)
         public float? Consumption { get; set; }
         public string DriveDisplay { get; set; } = string.Empty;       // "Front-Wheel", "Rear-Wheel", etc.
+        public string Drive { get; set; } = string.Empty;              // "FWD", "RWD", etc. (enum values)
         public string TransmissionDisplay { get; set; } = string.Empty; // "Manual", "Automatic", etc.
+        public string Transmission { get; set; } = string.Empty;       // "Manual", "Automatic", etc. (enum values)
         public string BodyDisplay { get; set; } = string.Empty;        // "Sedan", "SUV", etc.
+        public string Body { get; set; } = string.Empty;               // "Sedan", "SUV", etc. (enum values)
         public float Displacement { get; set; }
         public int HorsePower { get; set; }
         
         // Important details
         public string ConditionDisplay { get; set; } = string.Empty;   // "Excellent", "Good", etc.
+        public string Condition { get; set; } = string.Empty;          // "BrandNew", "Used", etc. (enum values)
         public string VinNumber { get; set; } = string.Empty;
         
         // Car images
@@ -67,13 +72,18 @@ namespace RideHiveApi.Models.DataTransferObjects
                 Course = car.Course,
                 // Display values (for user-friendly display)
                 FuelDisplay = GetEnumDescription(car.Fuel),
+                Fuel = car.Fuel.ToString(),
                 Consumption = car.Consumption,
                 DriveDisplay = GetEnumDescription(car.Drive),
+                Drive = car.Drive.ToString(),
                 TransmissionDisplay = GetEnumDescription(car.Transmission),
+                Transmission = car.Transmission.ToString(),
                 BodyDisplay = GetEnumDescription(car.Body),
+                Body = car.Body.ToString(),
                 Displacement = car.Displacement,
                 HorsePower = car.HorsePower,
                 ConditionDisplay = GetEnumDescription(car.Condition),
+                Condition = car.Condition.ToString(),
                 VinNumber = car.VinNumber,
                 CarImages = car.CarImages?.ToList() ?? new List<CarImageData>()
             };

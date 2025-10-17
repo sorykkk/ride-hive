@@ -73,23 +73,22 @@ export interface CarResponseDto {
 }
 
 export interface CarUpdateDto {
-  brand: string;
-  model: string;
+  brand?: string;
+  model?: string;
   version?: string;
-  color: string;
-  numberDoors: number;
-  numberSeats: number;
-  yearProduction: number;
-  course: number;
-  fuel: string;
+  color?: string;
+  numberDoors?: number;
+  numberSeats?: number;
+  yearProduction?: number;
+  course?: number;
+  fuel?: string;
   consumption?: number;
-  drive: string;
-  transmission: string;
-  body: string;
-  displacement: number;
-  horsePower: number;
-  condition: string;
-  vinNumber: string;
+  drive?: string;
+  transmission?: string;
+  body?: string;
+  displacement?: number;
+  horsePower?: number;
+  condition?: string;
 }
 
 export interface CarImageData {
