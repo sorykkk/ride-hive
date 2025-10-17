@@ -114,3 +114,29 @@ export interface EnumCollections {
   bodyTypes: EnumOption[];
   conditionTypes: EnumOption[];
 }
+
+
+export interface UserAuthResponseDto {
+  userId: string
+  email: string
+  name: string
+  surname: string
+  role: 'Client' | 'Owner'
+  registeredAt: string
+}
+
+export interface UserLoginDto {
+  email: string
+  password: string
+}
+
+export interface UserRegisterDto {
+  name: string
+  surname: string
+  email: string
+  password: string
+  role: 'Client' | 'Owner'
+  age?: number
+  phone?: number
+  drivingLicenseImage?: File
+}

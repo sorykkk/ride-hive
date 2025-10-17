@@ -5,10 +5,24 @@ import CreatePost from '@/components/post/CreatePost.vue'
 import Profile from '@/components/profile/Profile.vue'
 import AddCar from '@/components/car/AddCar.vue'
 import EditCar from '@/components/car/EditCar.vue'
+import LoginPage from "@/components/AuthPage/LoginPage.vue"
+import RegisterPage from '@/components/AuthPage/RegisterPage.vue'
 
 const routes = [
   {
-    path: '/',
+    path:'/',
+    name: 'login',
+    component: LoginPage,
+    meta: {title: 'Log in RideHive'}
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterPage,
+    meta: {title: 'Register'}
+  },
+  {
+    path: '/home',
     name: 'home',
     component: Home,
     meta: { title: 'RideHive - Home' }
