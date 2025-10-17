@@ -246,7 +246,7 @@ onMounted(() => {
                       </div>
                       <div class="spec-item">
                         <span class="spec-label">Engine:</span>
-                        <span>{{ car.displacement }}L - {{ car.horsePower }}HP</span>
+                        <span>{{ car.displacement }}cm³ - {{ car.horsePower }}HP</span>
                       </div>
                       <div class="spec-item" v-if="car.consumption">
                         <span class="spec-label">Consumption:</span>
