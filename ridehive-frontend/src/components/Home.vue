@@ -21,7 +21,7 @@ const handleSearchInput = (query: string) => {
       <SearchBar @search="handleSearch" @input="handleSearchInput" />
     </div>
 
-    <h1>Welcome @user.name!</h1>
+    <h1 class="welcome-text">Welcome @user.name!</h1>
 
     <div class="card">
       <p>Here is mock implementation</p>
@@ -54,5 +54,10 @@ const handleSearchInput = (query: string) => {
 
 .card {
   margin-top: 20px;
+}
+
+.welcome-text {
+  text-align: center;
+  width: 100%;
 }
 </style>
