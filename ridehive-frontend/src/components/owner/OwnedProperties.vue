@@ -1,8 +1,25 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { NCard, NButton, NEmpty, NGrid, NGridItem, NTag, NModal, useMessage, NSpin, NCarousel, NIcon } from 'naive-ui';
-import { AddOutline, CreateOutline, TrashOutline, CalendarOutline, SpeedometerOutline, CarOutline } from '@vicons/ionicons5';
+import { 
+  NCard, 
+  NButton, 
+  NEmpty, 
+  NGrid, 
+  NGridItem, 
+  NTag, 
+  NModal, 
+  useMessage, 
+  NSpin, 
+  NCarousel, 
+  NIcon } from 'naive-ui';
+import { 
+  AddOutline, 
+  CreateOutline, 
+  TrashOutline, 
+  CalendarOutline, 
+  SpeedometerOutline, 
+  CarOutline } from '@vicons/ionicons5';
 import { carsApi, ApiError } from '@/api';
 import type { CarResponseDto, CarImageData } from '@/api';
 
