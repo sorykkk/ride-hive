@@ -5,7 +5,7 @@ namespace RideHiveApi.Models.DataTransferObjects
     public class CarResponseDto
     {
         public int CarId { get; set; }
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
         
         // Basic details
         public string Brand { get; set; } = string.Empty;

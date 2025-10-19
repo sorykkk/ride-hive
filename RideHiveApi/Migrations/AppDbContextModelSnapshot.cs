@@ -112,8 +112,9 @@ namespace RideHiveApi.Migrations
                     b.Property<int>("NumberSeats")
                         .HasColumnType("integer");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("OwnershipDocumentContentType")
                         .HasMaxLength(50)
@@ -154,11 +155,8 @@ namespace RideHiveApi.Migrations
 
             modelBuilder.Entity("RideHiveApi.Models.Owner", b =>
                 {
-                    b.Property<int>("OwnerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OwnerId"));
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -195,8 +193,9 @@ namespace RideHiveApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("PostedAt")
                         .HasColumnType("timestamp with time zone");
@@ -205,8 +204,8 @@ namespace RideHiveApi.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("SpecialRequirements")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
 
                     b.Property<string>("Title")
                         .IsRequired()

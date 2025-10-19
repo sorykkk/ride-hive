@@ -18,7 +18,7 @@ namespace RideHiveApi.Migrations
                 {
                     CarId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OwnerId = table.Column<int>(type: "integer", nullable: false),
+                    OwnerId = table.Column<string>(type: "text", nullable: false),
                     Brand = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Model = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Version = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
@@ -36,12 +36,24 @@ namespace RideHiveApi.Migrations
                     HorsePower = table.Column<int>(type: "integer", nullable: false),
                     Condition = table.Column<string>(type: "text", nullable: false),
                     VinNumber = table.Column<string>(type: "character varying(17)", maxLength: 17, nullable: false),
-                    OwnershipDocumentData = table.Column<byte[]>(type: "bytea", maxLength: 10485760, nullable: false),
+                    OwnershipDocumentPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     OwnershipDocumentContentType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CarItems", x => x.CarId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Owner",
+                columns: table => new
+                {
+                    OwnerId = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Owner", x => x.OwnerId);
                 });
 
             migrationBuilder.CreateTable(
@@ -63,6 +75,34 @@ namespace RideHiveApi.Migrations
                         column: x => x.CarId,
                         principalTable: "CarItems",
                         principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostItems",
+                columns: table => new
+                {
+                    PostId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OwnerId = table.Column<string>(type: "text", nullable: false),
+                    CarId = table.Column<int>(type: "integer", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    SpecialRequirements = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    AvailableTimeSlots = table.Column<DateTime[]>(type: "timestamp with time zone[]", nullable: false),
+                    PostedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Available = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostItems", x => x.PostId);
+                    table.ForeignKey(
+                        name: "FK_PostItems_Owner_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Owner",
+                        principalColumn: "OwnerId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -91,6 +131,16 @@ namespace RideHiveApi.Migrations
                 table: "CarItems",
                 column: "VinNumber",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostItems_OwnerId",
+                table: "PostItems",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostItems_PostedAt",
+                table: "PostItems",
+                column: "PostedAt");
         }
 
         /// <inheritdoc />
@@ -100,7 +150,13 @@ namespace RideHiveApi.Migrations
                 name: "CarImages");
 
             migrationBuilder.DropTable(
+                name: "PostItems");
+
+            migrationBuilder.DropTable(
                 name: "CarItems");
+
+            migrationBuilder.DropTable(
+                name: "Owner");
         }
     }
 }

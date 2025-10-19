@@ -1,7 +1,7 @@
 // Type definitions for API models - matching backend JSON response (camelCase)
 export interface CarItem {
   carId: number;
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -26,7 +26,7 @@ export interface CarItem {
 
 // Car type used exclusively to deal with form car data at creation
 export interface CarCreateDto {
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -50,7 +50,7 @@ export interface CarCreateDto {
 
 export interface CarResponseDto {
   carId: number;
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -112,3 +112,13 @@ export interface EnumCollections {
   bodyTypes: EnumOption[];
   conditionTypes: EnumOption[];
 }
+
+// helper functions
+// Dynamic case conversion utilities
+export const toCamelCase = (str: string): string => {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+export const toPascalCase = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};

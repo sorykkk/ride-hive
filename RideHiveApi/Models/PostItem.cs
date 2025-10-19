@@ -8,7 +8,7 @@ namespace RideHiveApi.Models
         public int PostId { get; set; }
 
         [Required]
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
 
         [Required]
         public int CarId { get; set; }

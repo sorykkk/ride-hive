@@ -66,12 +66,12 @@ namespace RideHiveApi.Controllers
 
         // GET: api/Posts/owner/{ownerId}
         [HttpGet("owner/{ownerId}")]
-        public async Task<ActionResult<IEnumerable<PostResponseDto>>> GetPostsByOwner(int ownerId)
+        public async Task<ActionResult<IEnumerable<PostResponseDto>>> GetPostsByOwner(string ownerId)
         {
             try
             {
                 var posts = await _context.PostItems
-                    .Where(p => p.OwnerId == ownerId)
+                    .Where(p => p.OwnerId.Equals(ownerId))
                     .ToListAsync();
 
                 var response = posts.Select(PostResponseDto.FromPostItem).ToList();

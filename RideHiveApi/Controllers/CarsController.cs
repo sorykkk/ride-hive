@@ -68,13 +68,13 @@ namespace RideHiveApi.Controllers
 
         // GET: api/cars/owner/{ownerId}
         [HttpGet("owner/{ownerId}")]
-        public async Task<ActionResult<IEnumerable<CarResponseDto>>> GetCarsByOwner(int ownerId)
+        public async Task<ActionResult<IEnumerable<CarResponseDto>>> GetCarsByOwner(string ownerId)
         {
             try
             {
                 var cars = await _context.CarItems
                     .Include(c => c.CarImages)
-                    .Where(c => c.OwnerId == ownerId)
+                    .Where(c => c.OwnerId.Equals(ownerId))
                     .ToListAsync();
 
                 var response = cars.Select(CarResponseDto.FromCarItem).ToList();

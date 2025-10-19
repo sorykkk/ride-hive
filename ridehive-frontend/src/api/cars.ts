@@ -1,15 +1,7 @@
 //CRUD operations on cars
+import { toPascalCase } from './types';
 import { apiClient } from './base';
 import type { CarItem, CarCreateDto, CarResponseDto, CarUpdateDto, CarImageData } from './types';
-
-// Dynamic case conversion utilities - no more manual field mapping!
-export const toCamelCase = (str: string): string => {
-  return str.charAt(0).toLowerCase() + str.slice(1);
-};
-
-export const toPascalCase = (str: string): string => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
 
 export class CarsApi {
   // Get all cars
@@ -23,7 +15,7 @@ export class CarsApi {
   }
 
   // Get cars by owner ID
-  async getCarsByOwner(ownerId: number): Promise<CarResponseDto[]> {
+  async getCarsByOwner(ownerId: string): Promise<CarResponseDto[]> {
     return apiClient.get<CarResponseDto[]>(`/api/Cars/owner/${ownerId}`);
   }
 

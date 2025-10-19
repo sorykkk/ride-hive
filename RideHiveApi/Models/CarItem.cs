@@ -7,9 +7,9 @@ namespace RideHiveApi.Models
     {
         [Key]
         public int CarId { get; set; }
-        
+
         [Required]
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
         
         // Basic details
         [Required]

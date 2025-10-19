@@ -20,7 +20,7 @@ import {
   type UploadFileInfo
 } from 'naive-ui';
 import { api } from '@/api';
-import { toCamelCase } from '@/api/cars';
+import { toCamelCase } from '@/api/types';
 import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
@@ -33,7 +33,8 @@ const formRef = ref<FormInst | null>(null);
 const loading = ref(false);
 
 // Mock user ID - in real app this would come from auth store
-const currentUserId = 1;
+// TODO: Replace with actual authenticated user ID from auth service
+const currentUserId = "1";
 
 // Initialize enum store
 const enumStore = useEnumStore();

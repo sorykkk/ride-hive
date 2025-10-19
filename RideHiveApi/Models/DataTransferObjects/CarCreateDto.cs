@@ -7,7 +7,7 @@ namespace RideHiveApi.Models.DataTransferObjects
     public class CarCreateDto
     {
         [Required]
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Brand is required")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Brand must be between 2 and 50 characters")]
