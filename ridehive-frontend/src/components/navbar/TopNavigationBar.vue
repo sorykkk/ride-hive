@@ -7,7 +7,8 @@ import {
   HomeOutline, 
   AddOutline, 
   NotificationsOutline, 
-  InformationCircleOutline } from '@vicons/ionicons5'
+  InformationCircleOutline,
+  Albums } from '@vicons/ionicons5'
 import { 
   NLayoutHeader, 
   NMenu, 
@@ -59,6 +60,11 @@ const menuOptions = [
     label: 'About',
     key: 'about',
     icon: renderIcon(InformationCircleOutline)
+  },
+  {
+    label: 'My posts',
+    key: 'owner-posts',
+    icon: renderIcon(Albums)
   }
 ]
 
@@ -96,23 +102,19 @@ const handleNotificationsClick = () => {
 <template>
   <NLayoutHeader 
     bordered
-    style="height: 64px; padding: 0 24px; display: flex; align-items: center; background: white; position: sticky; top: 0; z-index: 100;"
+    class="navbar-header"
   >
     <!-- Logo -->
-    <div style="margin-right: 12px;">
+    <div class="logo-container">
       <router-link to="/" style="text-decoration: none;">
         <img src="@/assets/logo/logo-1.png" class="logo" alt="ride-hive logo" />
       </router-link>
     </div>
 
     <!-- Left Side: Navigation Menu + Post Button -->
-    <div style="display: flex; align-items: center; flex: 1;">
+    <div class="nav-menu-container">
       <!-- Navigation Menu -->
-      <div style="display: flex; align-items: center;">
-        <!-- :options -> column before optionsinterpret menuOptions as value not as string -->
-        <!-- v-model:value -> two way binding between component property and local variable, here we
-          bind value prop of NMenu to activeKey, when active key is changed the prop will change, and 
-          when user interacts with menu and changes section, activeKey will automatically update -->
+      <div class="menu-wrapper">
         <NMenu
           v-model:value="activeKey"
           mode="horizontal"
@@ -121,7 +123,6 @@ const handleNotificationsClick = () => {
           @update:value="handleMenuSelect"
         />
         <!-- Post Button directly next to Home -->
-        <!-- @ -> shorthand for v-on, is used to listen for DOM events and does something if it is true -->
         <NButton
           type="success"
           circle
@@ -129,7 +130,7 @@ const handleNotificationsClick = () => {
           @click="handlePostClick"
           @mouseenter="isPostHovered = true"
           @mouseleave="isPostHovered = false"
-          style="transition: all 0.3s ease; min-width: 40px; margin-left: 24px;"
+          class="post-button"
         >
           <template #icon>
             <NIcon><AddOutline /></NIcon>
@@ -140,7 +141,7 @@ const handleNotificationsClick = () => {
     </div>
 
     <!-- Right Side Actions: notifications + profile -->
-    <div style="display: flex; align-items: center; flex-shrink: 0;">
+    <div class="actions-container">
       <NSpace align="center" :size="12">
         <NBadge :value="3" dot type="error" :offset="[-6, 6]">
           <NButton 
@@ -163,14 +164,53 @@ const handleNotificationsClick = () => {
 </template>
 
 <style scoped>
+.navbar-header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-container {
+  margin-right: 12px;
+}
+
 .logo {
-  height: 40px;        /* Fits within 64px header */
-  padding: 0 12px;     /* Reasonable padding */
+  height: 40px;
+  padding: 0 12px;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.nav-menu-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.menu-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.post-button {
+  transition: all 0.3s ease;
+  min-width: 40px;
+  margin-left: 24px;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 /* Expandable Post Button Styles */
@@ -179,10 +219,9 @@ const handleNotificationsClick = () => {
   min-width: 80px !important;
 }
 
-/* @todo: replace it latter, it's a placeholder for now */
 :deep(.n-badge-sup) {
   background-color: #ff4757 !important;
-  transform: translate(-6px, 6px); /* more left, more down */
+  transform: translate(-6px, 6px);
 }
 
 /* Smooth transitions for all interactive elements */
@@ -196,8 +235,51 @@ const handleNotificationsClick = () => {
   transform: scale(1.05);
 }
 
-/* Responsive: prevent post button expansion on small screens */
+/* Mobile responsive layout - Equally distributed icons */
 @media (max-width: 768px) {
+  .navbar-header {
+    padding: 0 8px;
+    justify-content: space-between;
+  }
+
+  /* Hide logo on mobile to save space */
+  .logo-container {
+    display: none;
+  }
+
+  /* Make nav menu take full width */
+  .nav-menu-container {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .menu-wrapper {
+    width: 100%;
+    justify-content: space-evenly;
+  }
+
+  /* Hide menu labels on mobile, show only icons */
+  :deep(.n-menu-item-content__icon) {
+    margin-right: 0 !important;
+  }
+
+  :deep(.n-menu-item-content-header) {
+    display: none !important;
+  }
+
+  /* Make menu items equally spaced */
+  :deep(.n-menu-item) {
+    flex: 1;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  /* Post button stays circular on mobile */
+  .post-button {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
   .post-button-expanded {
     border-radius: 50% !important;
     min-width: 40px !important;
@@ -208,7 +290,6 @@ const handleNotificationsClick = () => {
     display: none !important;
   }
   
-  /* Ensure consistent icon positioning by forcing the icon to stay in place */
   .post-button-expanded :deep(.n-button__icon) {
     margin: 0 !important;
     position: absolute !important;
@@ -216,6 +297,30 @@ const handleNotificationsClick = () => {
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
   }
+
+  /* Actions container with reduced spacing */
+  .actions-container {
+    margin-left: 8px;
+  }
+
+  :deep(.n-space) {
+    gap: 4px !important;
+  }
 }
 
+/* Extra small screens - further optimization */
+@media (max-width: 480px) {
+  .navbar-header {
+    padding: 0 4px;
+  }
+
+  :deep(.n-button) {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  :deep(.n-icon) {
+    font-size: 18px !important;
+  }
+}
 </style>
