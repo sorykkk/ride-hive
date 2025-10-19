@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, '')
         }
       }
-    }
+    },
+    build: {
+    chunkSizeWarningLimit: 1000, // increase limit from 500KB → 1MB
+    },
   }
 })
