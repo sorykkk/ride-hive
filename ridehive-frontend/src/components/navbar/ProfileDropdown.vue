@@ -10,6 +10,8 @@ import {
   ChevronDownOutline ,
   LayersOutline
 } from '@vicons/ionicons5'
+import axios from 'axios'
+import { useAuthStore } from '@/api/Auth'
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
 // Router setup
@@ -48,7 +50,18 @@ const profileOptions = [
 ]
 
 // Handle dropdown menu selection
-const handleSelect = (key: string) => {
+const handleSelect = async (key: string) => {
+  if (key === 'logout') {
+    try {
+      const authStore = useAuthStore()
+      await authStore.logout()
+      router.push('/') 
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+    return
+  }
+
   router.push({ name: key })
 }
 

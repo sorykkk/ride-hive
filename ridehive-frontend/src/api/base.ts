@@ -18,6 +18,7 @@ export class ApiClient {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      credentials: 'include',
       ...options,
     };
 
@@ -81,6 +82,7 @@ export class ApiClient {
       method: 'POST',
       headers: {}, // Don't set Content-Type for FormData, let browser set it
       body: formData,
+      credentials: 'include',
     });
   }
 

@@ -1,54 +1,70 @@
 <template>
   <div class="auth-page">
-    <div class="auth-card">
+    <n-card class="auth-card" :bordered="true">
       <!-- Logo -->
       <div class="auth-logo">
         <img src="@/assets/logo/logo-1.png" alt="RideHive" />
         <h1>RideHive</h1>
       </div>
 
-      <h2>Welcome Back</h2>
-      <p class="subtitle">Sign in to your account</p>
+      <n-h2 class="text-center">Welcome Back</n-h2>
+      <n-text depth="3" class="subtitle">Sign in to your account</n-text>
 
       <!-- Login Form -->
-      <form @submit.prevent="handleLogin" class="auth-form">
-        <div class="form-group">
-          <label>Email</label>
-          <input
-            v-model="form.email"
-            type="email"
+      <n-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        size="large"
+        label-placement="top"
+        require-mark-placement="right-hanging"
+        class="auth-form"
+      >
+        <n-form-item label="Email" path="email">
+          <n-input
+            v-model:value="form.email"
+            type="text"
             placeholder="your.email@example.com"
-            required
             :disabled="authStore.isLoading"
+            @keydown.enter="handleLogin"
           />
-        </div>
+        </n-form-item>
 
-        <div class="form-group">
-          <label>Password</label>
-          <input
-            v-model="form.password"
+        <n-form-item label="Password" path="password">
+          <n-input
+            v-model:value="form.password"
             type="password"
-            placeholder="••••••••"
-            required
+            show-password-on="click"
+            placeholder="Enter your password"
             :disabled="authStore.isLoading"
+            @keydown.enter="handleLogin"
           />
-        </div>
+        </n-form-item>
 
-        <div v-if="authStore.error" class="error-message">
+        <n-alert v-if="authStore.error" type="error" :show-icon="true" class="mb-4">
           {{ authStore.error }}
-        </div>
+        </n-alert>
 
-        <button type="submit" class="btn-primary" :disabled="authStore.isLoading">
+        <n-button
+          type="primary"
+          block
+          size="large"
+          :loading="authStore.isLoading"
+          @click="handleLogin"
+        >
           {{ authStore.isLoading ? 'Logging in...' : 'Login' }}
-        </button>
-      </form>
+        </n-button>
+      </n-form>
+
+      <n-divider />
 
       <div class="auth-footer">
-        <p>Don't have an account?
-          <router-link to="/register" class="link-primary">Register</router-link>
-        </p>
+        <n-text>Don't have an account?</n-text>
+        <n-button text type="primary" @click="router.push('/register')">
+          Register
+        </n-button>
       </div>
-    </div>
+    </n-card>
   </div>
 </template>
 
@@ -56,19 +72,44 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../api/Auth'
+import { 
+  NCard, 
+  NH2, 
+  NText, 
+  NForm, 
+  NFormItem, 
+  NInput, 
+  NButton, 
+  NAlert,
+  NDivider,
+  type FormInst,
+  type FormRules
+} from 'naive-ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const formRef = ref<FormInst | null>(null)
 
 const form = ref({
   email: '',
   password: ''
 })
 
+const rules: FormRules = {
+  email: [
+    { required: true, message: 'Email is required', trigger: 'blur' },
+    { type: 'email', message: 'Invalid email format', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: 'Password is required', trigger: 'blur' }
+  ]
+}
+
 const handleLogin = async () => {
   try {
+    await formRef.value?.validate()
     const user = await authStore.login(form.value)
-    router.push('/')
+    router.push('/home') 
   } catch (error) {
     console.error('Login failed:', error)
   }
@@ -86,12 +127,8 @@ const handleLogin = async () => {
 }
 
 .auth-card {
-  background: white;
-  border-radius: 12px;
-  padding: 2.5rem;
   width: 100%;
   max-width: 400px;
-  border: 1px solid #e5e8ef;
 }
 
 .auth-logo {
@@ -113,91 +150,30 @@ const handleLogin = async () => {
   margin: 0;
 }
 
-h2 {
+.text-center {
   text-align: center;
-  color: #333;
-  font-size: 1.25rem;
   margin-bottom: 0.25rem;
 }
 
 .subtitle {
+  display: block;
   text-align: center;
-  color: #666;
   margin-bottom: 1.5rem;
 }
 
 .auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-  color: #444;
-}
-
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1.5px solid #d0d7e2;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-
-input:focus {
-  outline: none;
-  border-color: #004d96;
-}
-
-.error-message {
-  background: #fee;
-  color: #b22;
-  border-radius: 8px;
-  padding: 0.75rem;
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 0.9rem;
-  background: #004d96;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #0364be;
-}
-
-.btn-primary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  margin-bottom: 0;
 }
 
 .auth-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.95rem;
-  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
 }
 
-.link-primary {
-  color: #004d96;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.link-primary:hover {
-  text-decoration: underline;
+.mb-4 {
+  margin-bottom: 1rem;
 }
 </style>
