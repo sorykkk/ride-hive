@@ -10,6 +10,7 @@ namespace RideHiveApi.Data
 
         public DbSet<CarItem> CarItems { get; set; }
         public DbSet<CarImageData> CarImages { get; set; }
+        public DbSet<PostItem> PostItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,24 @@ namespace RideHiveApi.Data
                     // Configure indexes
                     entity.HasIndex(e => e.CarId);
                     entity.HasIndex(e => e.UploadedAt);
+                }
+            );
+
+            // Configure PostItem emtity
+            modelBuilder.Entity<PostItem>(entity =>
+                {
+                    entity.HasKey(e => e.PostId);
+                    entity.Property(e => e.PostId).ValueGeneratedOnAdd();
+
+                    // Relationship with Owner
+                    entity.HasOne(p => p.Owner)
+                    .WithMany(o => o.Posts)
+                    .HasForeignKey(p => p.OwnerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure indexes
+                    entity.HasIndex(e => e.OwnerId);
+                    entity.HasIndex(e => e.PostedAt);
                 }
             );
 

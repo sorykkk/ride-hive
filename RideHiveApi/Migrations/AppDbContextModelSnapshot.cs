@@ -152,6 +152,75 @@ namespace RideHiveApi.Migrations
                     b.ToTable("CarItems");
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.Owner", b =>
+                {
+                    b.Property<int>("OwnerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OwnerId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("OwnerId");
+
+                    b.ToTable("Owner");
+                });
+
+            modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PostId"));
+
+                    b.Property<bool>("Available")
+                        .HasColumnType("boolean");
+
+                    b.PrimitiveCollection<DateTime[]>("AvailableTimeSlots")
+                        .IsRequired()
+                        .HasColumnType("timestamp with time zone[]");
+
+                    b.Property<int>("CarId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PostedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("SpecialRequirements")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PostId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("PostedAt");
+
+                    b.ToTable("PostItems");
+                });
+
             modelBuilder.Entity("RideHiveApi.Models.CarImageData", b =>
                 {
                     b.HasOne("RideHiveApi.Models.CarItem", null)
@@ -161,9 +230,25 @@ namespace RideHiveApi.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
+                {
+                    b.HasOne("RideHiveApi.Models.Owner", "Owner")
+                        .WithMany("Posts")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("RideHiveApi.Models.CarItem", b =>
                 {
                     b.Navigation("CarImages");
+                });
+
+            modelBuilder.Entity("RideHiveApi.Models.Owner", b =>
+                {
+                    b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
         }

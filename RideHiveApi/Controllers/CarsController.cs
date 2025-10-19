@@ -112,7 +112,7 @@ namespace RideHiveApi.Controllers
                 // Save ownership document to filesystem
                 var documentPath = await _imageUploadService.SaveDocumentAsync(dto.OwnershipDocument, "ownership-documents");
 
-                // Create car entity directly - no mapping needed!
+                // Create car entity directly
                 var car = new CarItem
                 {
                     OwnerId = dto.OwnerId,
