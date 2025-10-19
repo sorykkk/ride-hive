@@ -16,7 +16,8 @@ const showDeleteModal = ref(false);
 const carToDelete = ref<CarResponseDto | null>(null);
 
 // Mock user ID - in real app this would come from auth store/context
-const currentUserId = 1;
+// TODO: Replace with actual authenticated user ID from auth service
+const currentUserId = "1";
 
 // Navigate to add car page
 const addCar = () => {
@@ -246,7 +247,7 @@ onMounted(() => {
                       </div>
                       <div class="spec-item">
                         <span class="spec-label">Engine:</span>
-                        <span>{{ car.displacement }}L - {{ car.horsePower }}HP</span>
+                        <span>{{ car.displacement }}cm³ - {{ car.horsePower }}HP</span>
                       </div>
                       <div class="spec-item" v-if="car.consumption">
                         <span class="spec-label">Consumption:</span>

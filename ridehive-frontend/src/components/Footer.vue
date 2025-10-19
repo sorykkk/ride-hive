@@ -21,9 +21,9 @@
         <ul class="footer-links">
           <li><a href="/">Home</a></li>
           <li><a href="/about">About</a></li>
-          <li><a href="/rides">Find Rides</a></li>
-          <li><a href="/offer">Offer Ride</a></li>
-          <li><a href="/contact">Contact</a></li>
+          <li><a href="#">Find Rides</a></li>
+          <li><a href="#">Offer Ride</a></li>
+          <li><a href="#">Contact</a></li>
         </ul>
       </div>
 
@@ -31,11 +31,11 @@
       <div class="footer-section">
         <h4>Support</h4>
         <ul class="footer-links">
-          <li><a href="/help">Help Center</a></li>
-          <li><a href="/safety">Safety</a></li>
-          <li><a href="/terms">Terms of Service</a></li>
-          <li><a href="/privacy">Privacy Policy</a></li>
-          <li><a href="/faq">FAQ</a></li>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Safety</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">FAQ</a></li>
         </ul>
       </div>
 

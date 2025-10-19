@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { EnumCollections } from '@/api/types'
+import { enumsApi } from '@/api'
 
 export const useEnumStore = defineStore('enums', () => {
   // State
@@ -32,7 +33,6 @@ export const useEnumStore = defineStore('enums', () => {
     
     try {
       // Use the new API instead of direct fetch
-      const { enumsApi } = await import('@/api')
       const data = await enumsApi.getAllEnums()
       
       enums.value = {

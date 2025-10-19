@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <h1>Here the user will create a post</h1>
+  <h1>Here the owner will create a post</h1>
 </template>
 
 <style>

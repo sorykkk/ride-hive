@@ -1,13 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/components/Home.vue'
 import About from '@/components/About.vue'
-import CreatePost from '@/components/post/CreatePost.vue'
+import CreatePost from '@/components/owner/CreatePost.vue'
 import Profile from '@/components/profile/Profile.vue'
 import EditProfile from '@/components/profile/EditProfile.vue'
 import Settings from '@/components/profile/Settings.vue'
-import OwnedProperties from '@/components/property/OwnedProperties.vue'
+import OwnedProperties from '@/components/owner/OwnedProperties.vue'
 import AddCar from '@/components/car/AddCar.vue'
 import EditCar from '@/components/car/EditCar.vue'
+import OwnerPosts from '@/components/owner/Posts.vue'
 
 const routes = [
   {
@@ -62,6 +63,12 @@ const routes = [
     name: 'edit-car',
     component: EditCar,
     meta: { title: 'Edit Car - RideHive' }
+  },
+  {
+    path: '/my-posts',
+    name: 'owner-posts',
+    component: OwnerPosts,
+    meta: {title: "My Posts - RideHive"}
   }
 ]
 
