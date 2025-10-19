@@ -7,7 +7,7 @@ namespace RideHiveApi.Models.DataTransferObjects
     public class CarCreateDto
     {
         [Required]
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Brand is required")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Brand must be between 2 and 50 characters")]
@@ -80,8 +80,9 @@ namespace RideHiveApi.Models.DataTransferObjects
         [Required(ErrorMessage = "Ownership document is required")]
         public IFormFile OwnershipDocument { get; set; } = null!;
 
-        // Car images upload (optional during creation)
-        [Required]
+        // Car images upload (required during creation)
+        [Required(ErrorMessage = "At least one car image is required")]
+        [MinLength(1, ErrorMessage = "At least one car image is required")]
         public List<IFormFile> CarImages { get; set; } = new List<IFormFile>();
     }
 }

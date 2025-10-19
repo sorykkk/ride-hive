@@ -2,12 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/api/Auth'
 import Home from '@/components/Home.vue'
 import About from '@/components/About.vue'
-import CreatePost from '@/components/post/CreatePost.vue'
+import CreatePost from '@/components/owner/CreatePost.vue'
 import Profile from '@/components/profile/Profile.vue'
+import EditProfile from '@/components/profile/EditProfile.vue'
+import Settings from '@/components/profile/Settings.vue'
+import OwnedProperties from '@/components/owner/OwnedProperties.vue'
 import AddCar from '@/components/car/AddCar.vue'
 import EditCar from '@/components/car/EditCar.vue'
 import LoginPage from "@/components/AuthPage/LoginPage.vue"
 import RegisterPage from '@/components/AuthPage/RegisterPage.vue'
+import OwnerPosts from '@/components/owner/Posts.vue'
 
 const routes = [
   // Public routes 
@@ -64,9 +68,27 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: { 
-      title: 'Profile - RideHive',
+      title: 'My Profile - RideHive',
       requiresAuth: true 
     }
+  },
+  {
+    path: '/edit-profile',
+    name: 'edit-profile',
+    component: EditProfile,
+    meta: { title: 'Edit Profile - RideHive' }
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: Settings,
+    meta: { title: 'Settings - RideHive' }
+  },
+  {
+    path: '/owned-properties',
+    name: 'owned-prop',
+    component: OwnedProperties,
+    meta: { title: 'Owned Properties - RideHive' }
   },
   {
     path: '/add-car',
@@ -82,11 +104,13 @@ const routes = [
     path: '/edit-car/:id',
     name: 'edit-car',
     component: EditCar,
-    meta: { 
-      title: 'Edit Car - RideHive',
-      requiresAuth: true, 
-      requiresRole: 'Owner' 
-    }
+    meta: { title: 'Edit Car - RideHive' }
+  },
+  {
+    path: '/my-posts',
+    name: 'owner-posts',
+    component: OwnerPosts,
+    meta: {title: "My Posts - RideHive"}
   }
 ]
 

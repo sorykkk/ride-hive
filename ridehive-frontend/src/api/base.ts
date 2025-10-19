@@ -62,6 +62,9 @@ export class ApiClient {
 
   // HTTP Methods
   async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+    // URLSearchParams automatically encodes the parameters into a proper URL format
+    // URLSearchParams({page: 2, search: "john"}).toString()
+    // -> "page=2&search=john"
     const queryString = params ? new URLSearchParams(params).toString() : '';
     const url = queryString ? `${endpoint}?${queryString}` : endpoint;
     

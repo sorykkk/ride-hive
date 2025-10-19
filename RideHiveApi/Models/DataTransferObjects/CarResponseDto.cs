@@ -1,14 +1,11 @@
-using System;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
-    //todo: correct this class for better representation
     public class CarResponseDto
     {
         public int CarId { get; set; }
-        public int OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
         
         // Basic details
         public string Brand { get; set; } = string.Empty;
@@ -22,21 +19,24 @@ namespace RideHiveApi.Models.DataTransferObjects
         
         // Specifications - these will show user-friendly descriptions
         public string FuelDisplay { get; set; } = string.Empty;        // "Gasoline", "Diesel", etc.
+        public string Fuel { get; set; } = string.Empty;               // "Petrol", "Diesel", etc. (enum values)
         public float? Consumption { get; set; }
         public string DriveDisplay { get; set; } = string.Empty;       // "Front-Wheel", "Rear-Wheel", etc.
+        public string Drive { get; set; } = string.Empty;              // "FWD", "RWD", etc. (enum values)
         public string TransmissionDisplay { get; set; } = string.Empty; // "Manual", "Automatic", etc.
+        public string Transmission { get; set; } = string.Empty;       // "Manual", "Automatic", etc. (enum values)
         public string BodyDisplay { get; set; } = string.Empty;        // "Sedan", "SUV", etc.
+        public string Body { get; set; } = string.Empty;               // "Sedan", "SUV", etc. (enum values)
         public float Displacement { get; set; }
         public int HorsePower { get; set; }
         
         // Important details
         public string ConditionDisplay { get; set; } = string.Empty;   // "Excellent", "Good", etc.
+        public string Condition { get; set; } = string.Empty;          // "BrandNew", "Used", etc. (enum values)
         public string VinNumber { get; set; } = string.Empty;
         
-        // Images count or URLs
-        //todo: make it get from table
-        // public int ImageCount { get; set; }
-        // public List<string>? ImageUrls { get; set; }
+        // Car images
+        public List<CarImageData> CarImages { get; set; } = new List<CarImageData>();
 
         // Helper method to get enum descriptions
         private static string GetEnumDescription(Enum value)
@@ -70,14 +70,20 @@ namespace RideHiveApi.Models.DataTransferObjects
                 Course = car.Course,
                 // Display values (for user-friendly display)
                 FuelDisplay = GetEnumDescription(car.Fuel),
+                Fuel = car.Fuel.ToString(),
                 Consumption = car.Consumption,
                 DriveDisplay = GetEnumDescription(car.Drive),
+                Drive = car.Drive.ToString(),
                 TransmissionDisplay = GetEnumDescription(car.Transmission),
+                Transmission = car.Transmission.ToString(),
                 BodyDisplay = GetEnumDescription(car.Body),
+                Body = car.Body.ToString(),
                 Displacement = car.Displacement,
                 HorsePower = car.HorsePower,
                 ConditionDisplay = GetEnumDescription(car.Condition),
-                VinNumber = car.VinNumber
+                Condition = car.Condition.ToString(),
+                VinNumber = car.VinNumber,
+                CarImages = car.CarImages?.ToList() ?? new List<CarImageData>()
             };
         }
     }

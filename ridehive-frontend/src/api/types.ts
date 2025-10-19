@@ -1,7 +1,7 @@
-// Type definitions for API models
+// Type definitions for API models - matching backend JSON response (camelCase)
 export interface CarItem {
   carId: number;
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -20,13 +20,13 @@ export interface CarItem {
   condition: string;
   vinNumber: string;
   carImages: CarImageData[];
-  ownershipDocumentData?: Uint8Array;
+  ownershipDocumentPath?: string;
   ownershipDocumentContentType?: string;
 }
 
 // Car type used exclusively to deal with form car data at creation
 export interface CarCreateDto {
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -50,7 +50,7 @@ export interface CarCreateDto {
 
 export interface CarResponseDto {
   carId: number;
-  ownerId: number;
+  ownerId: string;
   brand: string;
   model: string;
   version?: string;
@@ -73,31 +73,29 @@ export interface CarResponseDto {
 }
 
 export interface CarUpdateDto {
-  brand: string;
-  model: string;
+  brand?: string;
+  model?: string;
   version?: string;
-  color: string;
-  numberDoors: number;
-  numberSeats: number;
-  yearProduction: number;
-  course: number;
-  fuel: string;
+  color?: string;
+  numberDoors?: number;
+  numberSeats?: number;
+  yearProduction?: number;
+  course?: number;
+  fuel?: string;
   consumption?: number;
-  drive: string;
-  transmission: string;
-  body: string;
-  displacement: number;
-  horsePower: number;
-  condition: string;
-  vinNumber: string;
+  drive?: string;
+  transmission?: string;
+  body?: string;
+  displacement?: number;
+  horsePower?: number;
+  condition?: string;
 }
 
 export interface CarImageData {
   carImageId: number;
   carId: number;
-  imageData: Uint8Array;
-  contentType: string;
-  fileName: string;
+  imagePath: string; // Changed from imageData to imagePath
+  imageContentType: string;
   uploadedAt: string;
 }
 

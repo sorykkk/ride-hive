@@ -1,6 +1,7 @@
 using RideHiveApi.Models.Settings;
 using RideHiveApi.Data;
 using RideHiveApi.Models;
+using RideHiveApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
@@ -61,6 +62,9 @@ builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 // Load CORS and API settings
+// Register image upload service
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+
 var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
 var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
 
@@ -83,6 +87,10 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Seed roles on startup
+// Apply pending migrations on startup (for development)
+// Commands for Entity Framework:
+//      dotnet ef migrations add <MigrationName>
+//      dotnet ef database update
 using (var scope = app.Services.CreateScope())
 {
     await DbInitializer.SeedRoles(scope.ServiceProvider);
@@ -95,10 +103,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 🔥 CORS must be before Authentication/Authorization
+//CORS must be before Authentication/Authorization
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
+// Serve static files (images)
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.MapControllers();
