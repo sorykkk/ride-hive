@@ -19,7 +19,7 @@ import {
 } from 'naive-ui';
 import { postsApi, carsApi, ownersApi, ApiError } from '@/api';
 import type { PostResponseDto, CarResponseDto, Owner } from '@/api/types';
-import { formatDateForDisplay, getAvailableDates, sortTimeSlots } from '@/utils/dateUtils';
+import { formatDateForDisplay, getAvailableDates, groupTimeSlots } from '@/utils/dateUtils';
 
 const router = useRouter();
 const route = useRoute();
@@ -47,10 +47,11 @@ const isOwner = computed(() => {
   return post.value?.ownerId === currentUserId;
 });
 
-// Get available time slots
+// Get available time slots grouped into ranges
 const availableSlots = computed(() => {
   if (!post.value) return [];
-  return sortTimeSlots(getAvailableDates(post.value.availableTimeSlots));
+  const availableDates = getAvailableDates(post.value.availableTimeSlots);
+  return groupTimeSlots(availableDates);
 });
 
 // Get car image URLs
@@ -345,12 +346,12 @@ onMounted(() => {
               <div v-if="availableSlots.length > 0" class="time-slots">
                 <NGrid :cols="1" :x-gap="12" :y-gap="8" responsive="screen">
                   <NGridItem 
-                    v-for="(slot, index) in availableSlots" 
+                    v-for="(timeRange, index) in availableSlots" 
                     :key="index"
                   >
                     <div class="time-slot">
                       <span class="slot-icon">🕐</span>
-                      <span class="slot-time">{{ formatDateForDisplay(slot) }}</span>
+                      <span class="slot-time">{{ timeRange.display }}</span>
                     </div>
                   </NGridItem>
                 </NGrid>

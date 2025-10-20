@@ -24,6 +24,11 @@ import {
 } from 'naive-ui';
 import { carsApi, postsApi, ApiError } from '@/api';
 import type { PostCreateDto, CarResponseDto } from '@/api/types';
+
+// Form interface allowing null carId initially
+interface PostFormData extends Omit<PostCreateDto, 'carId'> {
+  carId: number | null;
+}
 import { formatDateForAPI } from '@/utils/dateUtils';
 
 const router = useRouter();
@@ -54,9 +59,9 @@ const timeSlotRanges = ref<TimeSlotRange[]>([]);
 const nextRangeId = ref(1);
 
 // Form data
-const formData = ref<PostCreateDto>({
+const formData = ref<PostFormData>({
   ownerId: currentUserId,
-  carId: 0,
+  carId: null,
   title: '',
   description: '',
   price: 1,
@@ -82,7 +87,14 @@ const selectedCar = computed(() => {
 // Form validation rules
 const rules: FormRules = {
   carId: [
-    { type: 'number', required: true, message: 'Please select a car', trigger: 'change' }
+    { 
+      required: true, 
+      message: 'Please select a car', 
+      trigger: 'change',
+      validator: (_rule: any, value: any) => {
+        return value != null && value !== 0;
+      }
+    }
   ],
   title: [
     { required: true, message: 'Title is required', trigger: 'blur' },
@@ -221,9 +233,16 @@ const handleSubmit = async () => {
     // Generate all time slots from ranges
     const allTimeSlots = getAllTimeSlots();
     
+    // Validate carId before submitting
+    if (formData.value.carId === null) {
+      message.error('Please select a car');
+      return;
+    }
+    
     // Prepare post data
     const postData: PostCreateDto = {
       ...formData.value,
+      carId: formData.value.carId, // TypeScript now knows this is not null
       availableTimeSlots: allTimeSlots
     };
     
