@@ -60,8 +60,15 @@ namespace RideHiveApi.Data
                         .HasForeignKey(p => p.OwnerId)
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    // Configure relationship with Car (cascade delete when car is deleted)
+                    entity.HasOne(p => p.Car)
+                        .WithMany()
+                        .HasForeignKey(p => p.CarId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     // Configure indexes
                     entity.HasIndex(e => e.OwnerId);
+                    entity.HasIndex(e => e.CarId);
                     entity.HasIndex(e => e.PostedAt);
                 }
             );

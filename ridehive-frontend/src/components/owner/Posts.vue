@@ -15,8 +15,8 @@ import {
   NText,
   NDivider
 } from 'naive-ui';
-import { postsApi, ApiError } from '@/api';
-import type { PostResponseDto } from '@/api/types';
+import { postsApi, carsApi, ApiError } from '@/api';
+import type { PostResponseDto, CarResponseDto } from '@/api/types';
 import { formatDateForDisplay, getAvailableDates } from '@/utils/dateUtils';
 
 const router = useRouter();
@@ -24,6 +24,7 @@ const message = useMessage();
 
 // State
 const posts = ref<PostResponseDto[]>([]);
+const cars = ref<Map<number, CarResponseDto>>(new Map());
 const loading = ref(false);
 
 // TODO: Replace with actual authenticated user ID from auth service
@@ -34,6 +35,17 @@ const loadPosts = async () => {
   try {
     loading.value = true;
     posts.value = await postsApi.getPostsByOwner(currentUserId);
+    
+    // Load car details for all posts
+    const carIds = [...new Set(posts.value.map(post => post.carId))];
+    for (const carId of carIds) {
+      try {
+        const car = await carsApi.getCarById(carId);
+        cars.value.set(carId, car);
+      } catch (error) {
+        console.error(`Failed to load car ${carId}:`, error);
+      }
+    }
   } catch (error) {
     console.error('Failed to load posts:', error);
     if (error instanceof ApiError) {
@@ -44,6 +56,13 @@ const loadPosts = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// Get car display name
+const getCarDisplayName = (carId: number): string => {
+  const car = cars.value.get(carId);
+  if (!car) return `Car ID: ${carId}`;
+  return `${car.brand} ${car.model} ${car.version || ''} (${car.yearProduction})`.trim();
 };
 
 // Delete post
@@ -150,7 +169,7 @@ onMounted(() => {
 
                   <div class="info-row">
                     <span class="info-icon">🚗</span>
-                    <span>Car ID: {{ post.carId }}</span>
+                    <span>{{ getCarDisplayName(post.carId) }}</span>
                   </div>
                 </div>
 

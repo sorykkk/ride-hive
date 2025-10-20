@@ -155,6 +155,13 @@ export interface PostResponseDto {
   available: boolean;
 }
 
+// Owner interface
+export interface Owner {
+  ownerId: string;
+  name: string;
+  posts?: PostItem[];
+}
+
 // helper functions
 // Dynamic case conversion utilities
 export const toCamelCase = (str: string): string => {

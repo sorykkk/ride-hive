@@ -10,8 +10,8 @@ export class CarsApi {
   }
 
   // Get car by ID
-  async getCarById(id: number): Promise<CarItem> {
-    return apiClient.get<CarItem>(`/api/Cars/${id}`);
+  async getCarById(id: number): Promise<CarResponseDto> {
+    return apiClient.get<CarResponseDto>(`/api/Cars/${id}`);
   }
 
   // Get cars by owner ID

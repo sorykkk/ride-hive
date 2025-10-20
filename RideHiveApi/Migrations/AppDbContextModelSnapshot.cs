@@ -215,6 +215,8 @@ namespace RideHiveApi.Migrations
 
                     b.HasKey("PostId");
 
+                    b.HasIndex("CarId");
+
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("PostedAt");
@@ -233,11 +235,19 @@ namespace RideHiveApi.Migrations
 
             modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
                 {
+                    b.HasOne("RideHiveApi.Models.CarItem", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("RideHiveApi.Models.Owner", "Owner")
                         .WithMany("Posts")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Car");
 
                     b.Navigation("Owner");
                 });
