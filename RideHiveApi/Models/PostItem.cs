@@ -10,6 +10,9 @@ namespace RideHiveApi.Models
         [Required]
         public string OwnerId { get; set; } = string.Empty;
 
+        // Navigation property
+        public Owner? Owner { get; set; }
+
         [Required]
         public int CarId { get; set; }
 
@@ -35,9 +38,5 @@ namespace RideHiveApi.Models
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 
         public bool Available { get; set; }
-
-        // Navigation property
-        [Required]
-        public Owner Owner { get; set; } = null!;
     }
 }

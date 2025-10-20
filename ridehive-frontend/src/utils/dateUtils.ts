@@ -34,3 +34,26 @@ export function getAvailableDates(timeSlots: string[]): string[] {
   const now = new Date();
   return timeSlots.filter(slot => new Date(slot) > now);
 }
+
+// Generate all dates between start and end (inclusive)
+export function generateDatesBetween(startDate: Date, endDate: Date): Date[] {
+  const dates: Date[] = [];
+  const currentDate = new Date(startDate);
+  
+  // Ensure start is not after end
+  if (currentDate > endDate) {
+    return [];
+  }
+  
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
+}
+
+// Generate ISO string dates between start and end (inclusive)
+export function generateDateRangeStrings(startDate: Date, endDate: Date): string[] {
+  return generateDatesBetween(startDate, endDate).map(date => formatDateForAPI(date));
+}

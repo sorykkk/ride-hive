@@ -43,8 +43,15 @@ const currentUserId = "1";
 // User's cars for selection
 const userCars = ref<CarResponseDto[]>([]);
 
-// Selected time slots
-const selectedTimeSlots = ref<number[]>([]);
+// Time slot ranges (start-end pairs with datetime)
+interface TimeSlotRange {
+  id: number;
+  startDateTime: number | null;
+  endDateTime: number | null;
+}
+
+const timeSlotRanges = ref<TimeSlotRange[]>([]);
+const nextRangeId = ref(1);
 
 // Form data
 const formData = ref<PostCreateDto>({
@@ -113,23 +120,71 @@ const loadUserCars = async () => {
   }
 };
 
-// Add time slot
-const addTimeSlot = () => {
-  const now = Date.now();
-  const tomorrow = now + 24 * 60 * 60 * 1000; // Default to tomorrow
-  selectedTimeSlots.value.push(tomorrow);
+// Add time slot range
+const addTimeSlotRange = () => {
+  timeSlotRanges.value.push({
+    id: nextRangeId.value++,
+    startDateTime: null,
+    endDateTime: null
+  });
 };
 
-// Remove time slot
-const removeTimeSlot = (index: number) => {
-  selectedTimeSlots.value.splice(index, 1);
-};
-
-// Update time slot
-const updateTimeSlot = (index: number, value: number | null) => {
-  if (value !== null) {
-    selectedTimeSlots.value[index] = value;
+// Remove time slot range
+const removeTimeSlotRange = (id: number) => {
+  const index = timeSlotRanges.value.findIndex(range => range.id === id);
+  if (index > -1) {
+    timeSlotRanges.value.splice(index, 1);
   }
+};
+
+// Generate all datetime slots between start and end (inclusive, with hour precision)
+const generateDateRange = (startDateTime: number, endDateTime: number): string[] => {
+  const dates: string[] = [];
+  const start = new Date(startDateTime);
+  const end = new Date(endDateTime);
+  
+  // Ensure start is not after end
+  if (start > end) {
+    return [];
+  }
+  
+  // Generate all dates between start and end (inclusive)
+  const currentDate = new Date(start);
+  currentDate.setHours(0, 0, 0, 0); // Start at beginning of day
+  
+  while (currentDate <= end) {
+    // Add each day at the same hour as the start time
+    const dayWithTime = new Date(currentDate);
+    dayWithTime.setHours(start.getHours(), start.getMinutes(), 0, 0);
+    
+    // Only add if it's within the end time on the last day
+    if (currentDate.toDateString() === end.toDateString()) {
+      if (dayWithTime <= end) {
+        dates.push(formatDateForAPI(dayWithTime));
+      }
+    } else {
+      dates.push(formatDateForAPI(dayWithTime));
+    }
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
+};
+
+// Get all dates from all ranges
+const getAllTimeSlots = (): string[] => {
+  const allDates: string[] = [];
+  
+  for (const range of timeSlotRanges.value) {
+    if (range.startDateTime && range.endDateTime) {
+      const rangeDates = generateDateRange(range.startDateTime, range.endDateTime);
+      allDates.push(...rangeDates);
+    }
+  }
+  
+  // Remove duplicates and sort
+  return [...new Set(allDates)].sort();
 };
 
 // Submit handler
@@ -140,30 +195,55 @@ const handleSubmit = async () => {
     // Validate form
     await formRef.value.validate();
     
-    // Validate time slots
-    if (selectedTimeSlots.value.length === 0) {
-      message.error('Please add at least one available time slot');
+    // Validate time slot ranges
+    if (timeSlotRanges.value.length === 0) {
+      message.error('Please add at least one available time slot range');
       return;
     }
 
-    // Validate time slots are in the future
+    // Validate all ranges have both start and end dates
+    const incompleteRanges = timeSlotRanges.value.filter(range => !range.startDateTime || !range.endDateTime);
+    if (incompleteRanges.length > 0) {
+      message.error('Please complete all time slot ranges with both start and end dates/times');
+      return;
+    }
+
+    // Validate ranges are in the future
     const now = Date.now();
-    const invalidSlots = selectedTimeSlots.value.filter(slot => slot <= now);
-    if (invalidSlots.length > 0) {
+    const invalidRanges = timeSlotRanges.value.filter(range => 
+      range.startDateTime! <= now || range.endDateTime! <= now
+    );
+    if (invalidRanges.length > 0) {
       message.error('All time slots must be in the future');
+      return;
+    }
+
+    // Validate start dates are before or equal to end dates
+    const invalidOrderRanges = timeSlotRanges.value.filter(range => 
+      range.startDateTime! > range.endDateTime!
+    );
+    if (invalidOrderRanges.length > 0) {
+      message.error('Start dates/times must be before or equal to end dates/times');
       return;
     }
 
     saving.value = true;
     
+    // Generate all time slots from ranges
+    const allTimeSlots = getAllTimeSlots();
+    
     // Prepare post data
     const postData: PostCreateDto = {
       ...formData.value,
-      availableTimeSlots: selectedTimeSlots.value.map(slot => formatDateForAPI(new Date(slot)))
+      availableTimeSlots: allTimeSlots
     };
     
+    console.log('Sending post data:', postData);
+    console.log('Generated time slots:', allTimeSlots);
+    
     // Create the post
-    await postsApi.createPost(postData);
+    const response = await postsApi.createPost(postData);
+    console.log('Post creation response:', response);
     
     message.success('Post created successfully!');
     router.push('/my-posts');
@@ -195,9 +275,9 @@ const navigateToAddCar = () => {
 onMounted(async () => {
   await loadUserCars();
   
-  // Add initial time slot if none exist
-  if (selectedTimeSlots.value.length === 0) {
-    addTimeSlot();
+  // Add initial time slot range if none exist
+  if (timeSlotRanges.value.length === 0) {
+    addTimeSlotRange();
   }
 });
 </script>
@@ -338,29 +418,59 @@ onMounted(async () => {
               <!-- Time Slots -->
               <NGridItem>
                 <div class="form-section">
-                  <h3 class="section-title">Available Time Slots</h3>
+                  <h3 class="section-title">Available Time Slot Ranges</h3>
                   <div class="time-slots-container">
-                    <div v-for="(_, index) in selectedTimeSlots" :key="index" class="time-slot-item">
-                      <NDatePicker
-                        v-model:value="selectedTimeSlots[index]"
-                        type="datetime"
-                        :is-date-disabled="(ts: number) => ts < Date.now() - 24 * 60 * 60 * 1000"
-                        placeholder="Select date and time"
-                        class="time-picker"
-                        @update:value="(value) => updateTimeSlot(index, value)"
-                      />
-                      <NButton 
-                        type="error" 
-                        ghost 
-                        @click="removeTimeSlot(index)"
-                        :disabled="selectedTimeSlots.length === 1"
-                      >
-                        Remove
-                      </NButton>
+                    <div v-for="range in timeSlotRanges" :key="range.id" class="time-slot-range">
+                      <div class="range-header">
+                        <span class="range-label">Time Slot Range {{ range.id }}</span>
+                        <NButton 
+                          type="error" 
+                          ghost 
+                          size="small"
+                          @click="removeTimeSlotRange(range.id)"
+                          :disabled="timeSlotRanges.length === 1"
+                        >
+                          Remove Range
+                        </NButton>
+                      </div>
+                      
+                      <div class="date-range-inputs">
+                        <div class="datetime-input-group">
+                          <label class="date-label">Start Date & Time</label>
+                          <NDatePicker
+                            v-model:value="range.startDateTime"
+                            type="datetime"
+                            :is-date-disabled="(ts: number) => ts < Date.now() - 24 * 60 * 60 * 1000"
+                            placeholder="Select start date and time"
+                            class="datetime-picker"
+                            clearable
+                          />
+                        </div>
+                        
+                        <div class="datetime-input-group">
+                          <label class="date-label">End Date & Time</label>
+                          <NDatePicker
+                            v-model:value="range.endDateTime"
+                            type="datetime"
+                            :is-date-disabled="(ts: number) => ts < (range.startDateTime || Date.now() - 24 * 60 * 60 * 1000)"
+                            placeholder="Select end date and time"
+                            class="datetime-picker"
+                            clearable
+                          />
+                        </div>
+                      </div>
+                      
+                      <div v-if="range.startDateTime && range.endDateTime" class="range-preview">
+                        <span class="preview-text">
+                          📅 {{ new Date(range.startDateTime).toLocaleString() }} - {{ new Date(range.endDateTime).toLocaleString() }}
+                          <br>
+                          ({{ generateDateRange(range.startDateTime, range.endDateTime).length }} time slots)
+                        </span>
+                      </div>
                     </div>
                     
-                    <NButton type="primary" dashed @click="addTimeSlot">
-                      Add Time Slot
+                    <NButton type="primary" dashed @click="addTimeSlotRange">
+                      ➕ Add Time Slot Range
                     </NButton>
                   </div>
                 </div>
@@ -451,13 +561,74 @@ onMounted(async () => {
 .time-slots-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
-.time-slot-item {
+.time-slot-range {
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.range-header {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
+}
+
+.range-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.date-range-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.datetime-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.date-picker {
+  width: 100%;
+}
+
+.datetime-picker {
+  width: 100%;
+}
+
+.range-preview {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #e0f2fe;
+  border: 1px solid #0284c7;
+  border-radius: 6px;
+}
+
+.preview-text {
+  font-size: 0.875rem;
+  color: #0c4a6e;
+  font-weight: 500;
 }
 
 .time-picker {
@@ -479,12 +650,21 @@ onMounted(async () => {
     font-size: 1rem;
   }
   
-  .time-slot-item {
+  .date-range-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .range-header {
     flex-direction: column;
+    gap: 8px;
     align-items: stretch;
   }
   
-  .time-picker {
+  .date-picker {
+    min-width: unset;
+  }
+  
+  .datetime-picker {
     min-width: unset;
   }
 }

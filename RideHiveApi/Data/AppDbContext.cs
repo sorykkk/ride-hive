@@ -11,6 +11,7 @@ namespace RideHiveApi.Data
         public DbSet<CarItem> CarItems { get; set; }
         public DbSet<CarImageData> CarImages { get; set; }
         public DbSet<PostItem> PostItems { get; set; }
+        public DbSet<Owner> Owners { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,21 +48,31 @@ namespace RideHiveApi.Data
                 }
             );
 
-            // Configure PostItem emtity
+            // Configure PostItem entity
             modelBuilder.Entity<PostItem>(entity =>
                 {
                     entity.HasKey(e => e.PostId);
                     entity.Property(e => e.PostId).ValueGeneratedOnAdd();
 
-                    // Relationship with Owner
+                    // Configure relationship with Owner
                     entity.HasOne(p => p.Owner)
-                    .WithMany(o => o.Posts)
-                    .HasForeignKey(p => p.OwnerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany(o => o.Posts)
+                        .HasForeignKey(p => p.OwnerId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     // Configure indexes
                     entity.HasIndex(e => e.OwnerId);
                     entity.HasIndex(e => e.PostedAt);
+                }
+            );
+
+            // Configure Owner entity
+            modelBuilder.Entity<Owner>(entity =>
+                {
+                    entity.HasKey(e => e.OwnerId);
+                    
+                    // Configure indexes
+                    entity.HasIndex(e => e.Name);
                 }
             );
 
@@ -85,6 +96,14 @@ namespace RideHiveApi.Data
             modelBuilder.Entity<CarItem>()
                 .Property(e => e.Condition)
                 .HasConversion<string>();
+
+            // Configure AvailableTimeSlots to be stored as JSON
+            modelBuilder.Entity<PostItem>()
+                .Property(e => e.AvailableTimeSlots)
+                .HasConversion(
+                    timeSlots => System.Text.Json.JsonSerializer.Serialize(timeSlots, new System.Text.Json.JsonSerializerOptions()),
+                    json => System.Text.Json.JsonSerializer.Deserialize<List<DateTime>>(json, new System.Text.Json.JsonSerializerOptions()) ?? new List<DateTime>()
+                );
         }
     }
 }

@@ -86,12 +86,26 @@ namespace RideHiveApi.Controllers
 
         // POST: api/Posts
         [HttpPost]
-        public async Task<ActionResult<PostItem>> CreatePost([FromForm] PostCreateDto dto)
+        public async Task<ActionResult<PostItem>> CreatePost([FromBody] PostCreateDto dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
+
+                // Validate that the Owner exists
+                var ownerExists = await _context.Owners.AnyAsync(o => o.OwnerId == dto.OwnerId);
+                if (!ownerExists)
+                {
+                    return BadRequest($"Owner with ID '{dto.OwnerId}' does not exist");
+                }
+
+                // Validate that the Car exists
+                var carExists = await _context.CarItems.AnyAsync(c => c.CarId == dto.CarId);
+                if (!carExists)
+                {
+                    return BadRequest($"Car with ID {dto.CarId} does not exist");
+                }
 
                 var post = new PostItem
                 {

@@ -164,7 +164,9 @@ namespace RideHiveApi.Migrations
 
                     b.HasKey("OwnerId");
 
-                    b.ToTable("Owner");
+                    b.HasIndex("Name");
+
+                    b.ToTable("Owners");
                 });
 
             modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
@@ -178,9 +180,9 @@ namespace RideHiveApi.Migrations
                     b.Property<bool>("Available")
                         .HasColumnType("boolean");
 
-                    b.PrimitiveCollection<DateTime[]>("AvailableTimeSlots")
+                    b.Property<string>("AvailableTimeSlots")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone[]");
+                        .HasColumnType("text");
 
                     b.Property<int>("CarId")
                         .HasColumnType("integer");

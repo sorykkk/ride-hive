@@ -56,7 +56,7 @@ export class CarsApi {
   }
 
   // Helper function to get image URLs from car images
-  getCarImageUrls(carImages: CarImageData[], baseUrl: string = 'http://localhost:5030'): string[] {
+  getCarImageUrls(carImages: CarImageData[]): string[] {
     console.log('Processing car images:', carImages);
     
     if (!carImages || carImages.length === 0) {
@@ -65,7 +65,7 @@ export class CarsApi {
     }
     
     return carImages.map((image, index) => {
-      const imageUrl = `${baseUrl}/${image.imagePath}`;
+      const imageUrl = `${apiClient.getBaseUrl()}/${image.imagePath}`;
       console.log(`Image ${index + 1}:`, {
         carImageId: image.carImageId,
         imagePath: image.imagePath,

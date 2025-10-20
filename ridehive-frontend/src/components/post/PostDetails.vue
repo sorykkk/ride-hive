@@ -51,6 +51,12 @@ const availableSlots = computed(() => {
   return sortTimeSlots(getAvailableDates(post.value.availableTimeSlots));
 });
 
+// Get car image URLs
+const carImageUrls = computed(() => {
+  if (!car.value?.carImages) return [];
+  return carsApi.getCarImageUrls(car.value.carImages);
+});
+
 // Load post data
 const loadPost = async () => {
   try {
@@ -215,65 +221,107 @@ onMounted(() => {
                   <NDivider />
 
                   <div class="car-specs">
-                    <NGrid :cols="2" :x-gap="16" :y-gap="12" responsive="screen">
-                      <NGridItem span="2 s:1">
+                    <NGrid :cols="3" :x-gap="16" :y-gap="12" responsive="screen">
+                      <NGridItem span="3 s:1">
+                        <div class="spec-item">
+                          <span class="spec-label">VIN Number:</span>
+                          <span class="spec-value">{{ car.vinNumber }}</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
                           <span class="spec-label">Color:</span>
                           <span class="spec-value">{{ car.color }}</span>
                         </div>
                       </NGridItem>
                       
-                      <NGridItem span="2 s:1">
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
                           <span class="spec-label">Version:</span>
                           <span class="spec-value">{{ car.version || 'Standard' }}</span>
                         </div>
                       </NGridItem>
 
-                      <NGridItem span="2 s:1">
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
-                          <span class="spec-label">Doors/Seats:</span>
-                          <span class="spec-value">{{ car.numberDoors }} doors, {{ car.numberSeats }} seats</span>
+                          <span class="spec-label">Doors:</span>
+                          <span class="spec-value">{{ car.numberDoors }}</span>
                         </div>
                       </NGridItem>
 
-                      <NGridItem span="2 s:1">
+                      <NGridItem span="3 s:1">
+                        <div class="spec-item">
+                          <span class="spec-label">Seats:</span>
+                          <span class="spec-value">{{ car.numberSeats }}</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
                           <span class="spec-label">Mileage:</span>
                           <span class="spec-value">{{ car.course.toLocaleString() }} km</span>
                         </div>
                       </NGridItem>
 
-                      <NGridItem span="2 s:1">
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
-                          <span class="spec-label">Engine:</span>
-                          <span class="spec-value">{{ car.displacement }}L, {{ car.horsePower }} HP</span>
+                          <span class="spec-label">Engine Size:</span>
+                          <span class="spec-value">{{ car.displacement }}L</span>
                         </div>
                       </NGridItem>
 
-                      <NGridItem span="2 s:1">
+                      <NGridItem span="3 s:1">
+                        <div class="spec-item">
+                          <span class="spec-label">Power:</span>
+                          <span class="spec-value">{{ car.horsePower }} HP</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3 s:1">
                         <div class="spec-item">
                           <span class="spec-label">Consumption:</span>
                           <span class="spec-value">{{ car.consumption || 'N/A' }} L/100km</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3 s:1">
+                        <div class="spec-item">
+                          <span class="spec-label">Condition:</span>
+                          <span class="spec-value">{{ car.condition }}</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3 s:1">
+                        <div class="spec-item">
+                          <span class="spec-label">Registration:</span>
+                          <span class="spec-value">{{ formatDateForDisplay(car.firstRegistration) }}</span>
+                        </div>
+                      </NGridItem>
+
+                      <NGridItem span="3">
+                        <div class="spec-item">
+                          <span class="spec-label">Description:</span>
+                          <span class="spec-value">{{ car.description || 'No description available' }}</span>
                         </div>
                       </NGridItem>
                     </NGrid>
                   </div>
 
                   <!-- Car Images -->
-                  <div v-if="car.carImages && car.carImages.length > 0" class="car-images">
+                  <div v-if="carImageUrls.length > 0" class="car-images">
                     <h3 class="section-title">Vehicle Photos</h3>
                     <NImageGroup>
                       <NSpace>
                         <NImage
-                          v-for="image in car.carImages"
-                          :key="image.carImageId"
-                          :src="image.imagePath"
+                          v-for="(imageUrl, index) in carImageUrls"
+                          :key="index"
+                          :src="imageUrl"
                           width="200"
                           height="150"
                           object-fit="cover"
-                          preview-disabled
                           class="car-image"
+                          :alt="`Car image ${index + 1}`"
                         />
                       </NSpace>
                     </NImageGroup>

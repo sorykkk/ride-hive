@@ -7,6 +7,10 @@ export class ApiClient {
     this.baseUrl = baseUrl || import.meta.env.VITE_API_BASE_URL || 'https://localhost:7000';
   }
 
+  public getBaseUrl() : string {
+    return this.baseUrl;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
