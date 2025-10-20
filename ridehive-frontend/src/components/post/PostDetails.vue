@@ -120,11 +120,11 @@ const goBack = () => {
 };
 
 // Navigate to edit post (if owner)
-const editPost = () => {
-  if (post.value && isOwner.value) {
-    router.push(`/edit-post/${post.value.postId}`);
-  }
-};
+// const editPost = () => {
+//   if (post.value && isOwner.value) {
+//     router.push(`/edit-post/${post.value.postId}`);
+//   }
+// };
 
 // Contact owner
 const contactOwner = () => {
@@ -143,9 +143,9 @@ onMounted(() => {
       <template #title>Post Details</template>
       <template #subtitle v-if="post">{{ post.title }}</template>
       <template #extra v-if="post && isOwner">
-        <NButton type="primary" ghost @click="editPost">
+        <!-- <NButton type="primary" ghost @click="editPost">
           Edit Post
-        </NButton>
+        </NButton> -->
       </template>
     </NPageHeader>
 

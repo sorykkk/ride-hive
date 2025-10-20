@@ -473,16 +473,16 @@ onMounted(async () => {
                           📅 {{ new Date(range.startDateTime).toLocaleString() }} - {{ new Date(range.endDateTime).toLocaleString() }}
                           <br>
                           ⏰ {{ generateDateRange(range.startDateTime, range.endDateTime).length }} hourly time slots will be created
-                          <br>
+                          <!-- <br>
                           <small style="color: #666;">
                             (Every hour from start time to end time)
-                          </small>
+                          </small> -->
                         </span>
                       </div>
                     </div>
                     
                     <NButton type="primary" dashed @click="addTimeSlotRange">
-                      ➕ Add Time Slot Range
+                      Add Time Slot Range
                     </NButton>
                   </div>
                 </div>

@@ -109,9 +109,6 @@ onMounted(() => {
         <h1 class="page-title">My Posts</h1>
         <p class="page-subtitle">Manage your rental listings</p>
       </div>
-      <!-- <NButton type="primary" @click="createNewPost" class="create-button">
-        🚗 Create New Post
-      </NButton> -->
     </div>
 
     <NSpin :show="loading" description="Loading your posts...">
@@ -168,7 +165,7 @@ onMounted(() => {
                   </div>
 
                   <div class="info-row">
-                    <span class="info-icon">🚗</span>
+                    <span class="info-icon">🚘</span>
                     <span>{{ getCarDisplayName(post.carId) }}</span>
                   </div>
                 </div>
@@ -193,7 +190,7 @@ onMounted(() => {
                     ghost
                     @click="viewPostDetails(post.postId)"
                   >
-                    👁️ View Details
+                    View Details
                   </NButton>
                   
                   <NPopconfirm
@@ -203,7 +200,7 @@ onMounted(() => {
                   >
                     <template #trigger>
                       <NButton type="error" ghost>
-                        🗑️ Delete
+                        Delete
                       </NButton>
                     </template>
                     Are you sure you want to delete this post? This action cannot be undone.
