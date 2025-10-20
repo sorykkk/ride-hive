@@ -1,6 +1,6 @@
 <!-- Home page with posts grid -->
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   NCard,
@@ -30,6 +30,20 @@ const posts = ref<PostResponseDto[]>([]);
 const cars = ref<Map<number, CarResponseDto>>(new Map());
 const owners = ref<Map<string, Owner>>(new Map());
 const loading = ref(false);
+const windowWidth = ref(window.innerWidth);
+
+// Responsive grid columns based on screen width
+const gridCols = computed(() => {
+  if (windowWidth.value >= 1200) return 4; // Large screens: 4 cards
+  if (windowWidth.value >= 900) return 3;  // Medium-large: 3 cards
+  if (windowWidth.value >= 600) return 2;  // Medium: 2 cards
+  return 1; // Small screens: 1 card
+});
+
+// Window resize handler
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 // Load all posts for home page
 const loadPosts = async () => {
@@ -100,6 +114,11 @@ const handleSearchInput = (query: string) => {
 // Load data on component mount
 onMounted(() => {
   loadPosts();
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 
@@ -119,15 +138,14 @@ onMounted(() => {
 
     <!-- Posts grid -->
     <div v-else-if="posts.length > 0" class="posts-section">
-      <NGrid :cols="4" :x-gap="20" :y-gap="20" responsive="screen">
+      <NGrid 
+        :cols="gridCols" 
+        :x-gap="20" 
+        :y-gap="20"
+      >
         <NGridItem 
           v-for="post in posts" 
           :key="post.postId"
-          :xs="24"
-          :sm="24" 
-          :md="12"
-          :lg="8"
-          :xl="6"
         >
           <NCard 
             class="post-card"
@@ -259,6 +277,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 280px; /* Minimum card width to prevent over-shrinking */
 }
 
 .post-card:hover {
