@@ -16,6 +16,7 @@ declare module 'vue' {
     Footer: typeof import('./src/components/Footer.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
     OwnedProperties: typeof import('./src/components/owner/OwnedProperties.vue')['default']
+    PostDetails: typeof import('./src/components/post/PostDetails.vue')['default']
     Posts: typeof import('./src/components/owner/Posts.vue')['default']
     Profile: typeof import('./src/components/profile/Profile.vue')['default']
     ProfileDropdown: typeof import('./src/components/navbar/ProfileDropdown.vue')['default']

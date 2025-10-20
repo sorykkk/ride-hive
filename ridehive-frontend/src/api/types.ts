@@ -113,6 +113,48 @@ export interface EnumCollections {
   conditionTypes: EnumOption[];
 }
 
+// Post-related interfaces
+export interface PostItem {
+  postId: number;
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+  postedAt: string;
+  available: boolean;
+  // Optional car data for display (when populated)
+  car?: CarItem;
+}
+
+export interface PostCreateDto {
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+}
+
+export interface PostResponseDto {
+  postId: number;
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+  postedAt: string;
+  available: boolean;
+}
+
 // helper functions
 // Dynamic case conversion utilities
 export const toCamelCase = (str: string): string => {

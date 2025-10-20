@@ -2,10 +2,12 @@
 export { ApiClient, ApiError, apiClient } from './base';
 export { CarsApi, carsApi } from './cars';
 export { EnumsApi, enumsApi } from './enums';
+export { postsApi } from './posts';
 
 // Import for internal use
 import { carsApi } from './cars';
 import { enumsApi } from './enums';
+import { postsApi } from './posts';
 
 // Export all types
 export type {
@@ -14,13 +16,17 @@ export type {
   CarUpdateDto,
   CarImageData,
   EnumOption,
-  EnumCollections
+  EnumCollections,
+  PostItem,
+  PostCreateDto,
+  PostResponseDto
 } from './types';
 
 // Main API class that combines all APIs
 export class Api {
   public cars = carsApi;
   public enums = enumsApi;
+  public posts = postsApi;
 }
 
 // Create main API instance

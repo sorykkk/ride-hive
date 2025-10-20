@@ -69,6 +69,12 @@ const routes = [
     name: 'owner-posts',
     component: OwnerPosts,
     meta: {title: "My Posts - RideHive"}
+  },
+  {
+    path: '/post/:id',
+    name: 'post-details',
+    component: () => import('@/components/post/PostDetails.vue'),
+    meta: {title: "Post Details - RideHive"}
   }
 ]
 
