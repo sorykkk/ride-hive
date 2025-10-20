@@ -1,3 +1,14 @@
+// helper functions
+// Dynamic case conversion utilities
+export const toCamelCase = (str: string): string => {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+export const toPascalCase = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+
 // Type definitions for API models - matching backend JSON response (camelCase)
 export interface CarItem {
   carId: number;
@@ -121,6 +132,11 @@ export interface UserAuthResponseDto {
   surname: string
   role: 'Client' | 'Owner'
   registeredAt: string
+  phone?: number
+  age?: number
+  bio?: string
+  location?: string
+  hasProfileImage?: boolean
 }
 
 export interface UserLoginDto {
@@ -137,4 +153,13 @@ export interface UserRegisterDto {
   age?: number
   phone?: number
   drivingLicenseImage?: File
+}
+
+export interface UpdateProfileDto {
+  name: string
+  surname: string
+  phone?: number
+  age?: number
+  bio?: string
+  location?: string
 }

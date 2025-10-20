@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiClient } from './base'
 
-import type {UserLoginDto, UserAuthResponseDto, UserRegisterDto } from './types';
+import type {UserLoginDto, UserAuthResponseDto, UserRegisterDto, UpdateProfileDto } from './types';
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -87,6 +87,26 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const updateProfile = async (data: UpdateProfileDto) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await apiClient.put<{ message: string, user: UserAuthResponseDto }>('/api/user/profile', data)
+
+      // Update local user data
+      user.value = response.user
+      localStorage.setItem('user', JSON.stringify(response.user))
+
+      return response
+    } catch (err: any) {
+      error.value = err.data?.message || err.data?.errors?.join(', ') || 'Profile update failed'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     user,
     isLoading,
@@ -98,6 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
-    checkAuth
+    checkAuth,
+    updateProfile
   }
 })

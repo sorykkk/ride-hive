@@ -2,18 +2,22 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RideHiveApi.Models.DataTransferObjects
 {
-    public class UserAuthResponseDto
+    public class UpdateProfileDto
     {
-        public string UserId { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
+        [Required]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
         public string Surname { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+
         public int? Phone { get; set; }
+
         public int? Age { get; set; }
+
+        [MaxLength(500)]
         public string? Bio { get; set; }
+
+        [MaxLength(200)]
         public string? Location { get; set; }
-        public bool HasProfileImage { get; set; }
-        public DateTime RegisteredAt { get; set; }
     }
 }

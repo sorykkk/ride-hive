@@ -2,15 +2,16 @@
 import { ref, onBeforeMount, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEnumStore } from '@/stores/enums.store';
-import { 
-  NCard, 
-  NForm, 
-  NFormItem, 
-  NInput, 
-  NInputNumber, 
-  NSelect, 
-  NButton, 
-  NUpload, 
+import { useAuthStore } from '@/api/Auth';
+import {
+  NCard,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NButton,
+  NUpload,
   NSpace,
   NGrid,
   NGridItem,
@@ -25,6 +26,7 @@ import type { CarCreateDto } from '@/api/types';
 
 const router = useRouter();
 const message = useMessage();
+const authStore = useAuthStore();
 
 // Form reference
 const formRef = ref<FormInst | null>(null);
@@ -32,9 +34,8 @@ const formRef = ref<FormInst | null>(null);
 // Loading state
 const loading = ref(false);
 
-// Mock user ID - in real app this would come from auth store
-// TODO: Replace with actual authenticated user ID from auth service
-const currentUserId = "1";
+// Get current user ID from auth store
+const currentUserId = computed(() => authStore.user?.userId || '');
 
 // Initialize enum store
 const enumStore = useEnumStore();
@@ -50,7 +51,7 @@ interface CarFormData extends Omit<CarCreateDto, 'course' | 'displacement' | 'ho
 
 // Form data - using CarFormData type for better type safety
 const formData = ref<CarFormData>({
-  ownerId: currentUserId,
+  ownerId: currentUserId.value,
   brand: '',
   model: '',
   version: '',
@@ -217,10 +218,17 @@ const clearBackendError = (fieldName: string) => {
 // Submit form
 const handleSubmit = async () => {
   if (!formRef.value) return;
-  
+
+  // Check if user is authenticated
+  if (!currentUserId.value) {
+    message.warning('Please login to add a car');
+    router.push('/login');
+    return;
+  }
+
   // Clear any previous backend validation errors at the start of each submission
   backendValidationErrors.value = {};
-  
+
   // First, validate the form - if validation fails, don't proceed
   try {
     await formRef.value.validate();
@@ -238,6 +246,7 @@ const handleSubmit = async () => {
     // Create CarCreateDto from formData with required field validation
     const carData: CarCreateDto = {
       ...formData.value,
+      ownerId: currentUserId.value, // Ensure we use the current user ID
       version: formData.value.version?.trim() || undefined,
       course: formData.value.course ?? 0,
       consumption: formData.value.consumption || undefined,

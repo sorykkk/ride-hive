@@ -12,6 +12,7 @@ namespace RideHiveApi.Data
         public DbSet<CarItem> CarItems { get; set; }
         public DbSet<CarImageData> CarImages { get; set; }
         public DbSet<PostItem> PostItems { get; set; }
+        public DbSet<Owner> Owners { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
