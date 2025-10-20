@@ -244,13 +244,6 @@ onMounted(() => {
                     <NGrid :cols="3" :x-gap="16" :y-gap="12" responsive="screen">
                       <NGridItem span="3 s:1">
                         <div class="spec-item">
-                          <span class="spec-label">VIN Number:</span>
-                          <span class="spec-value">{{ car.vinNumber }}</span>
-                        </div>
-                      </NGridItem>
-
-                      <NGridItem span="3 s:1">
-                        <div class="spec-item">
                           <span class="spec-label">Color:</span>
                           <span class="spec-value">{{ car.color }}</span>
                         </div>
@@ -309,20 +302,6 @@ onMounted(() => {
                         <div class="spec-item">
                           <span class="spec-label">Condition:</span>
                           <span class="spec-value">{{ car.conditionDisplay }}</span>
-                        </div>
-                      </NGridItem>
-
-                      <NGridItem span="3 s:1">
-                        <div class="spec-item">
-                          <span class="spec-label">Registration:</span>
-                          <span class="spec-value">{{ formatDateForDisplay(car.firstRegistration) }}</span>
-                        </div>
-                      </NGridItem>
-
-                      <NGridItem span="3">
-                        <div class="spec-item">
-                          <span class="spec-label">Description:</span>
-                          <span class="spec-value">{{ car.description || 'No description available' }}</span>
                         </div>
                       </NGridItem>
                     </NGrid>

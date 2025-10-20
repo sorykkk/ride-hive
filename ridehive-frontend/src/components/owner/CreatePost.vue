@@ -43,11 +43,11 @@ const currentUserId = "1";
 // User's cars for selection
 const userCars = ref<CarResponseDto[]>([]);
 
-// Time slot ranges (start-end pairs with date)
+// Time slot ranges (start-end pairs with datetime)
 interface TimeSlotRange {
   id: number;
-  startDate: number | null;
-  endDate: number | null;
+  startDateTime: number | null;
+  endDateTime: number | null;
 }
 
 const timeSlotRanges = ref<TimeSlotRange[]>([]);
@@ -124,8 +124,8 @@ const loadUserCars = async () => {
 const addTimeSlotRange = () => {
   timeSlotRanges.value.push({
     id: nextRangeId.value++,
-    startDate: null,
-    endDate: null
+    startDateTime: null,
+    endDateTime: null
   });
 };
 
@@ -137,21 +137,25 @@ const removeTimeSlotRange = (id: number) => {
   }
 };
 
-// Generate all dates between start and end (inclusive)
-const generateDateRange = (startDate: number, endDate: number): string[] => {
+// Generate all datetime slots between start and end (inclusive, with full datetime precision)
+const generateDateRange = (startDateTime: number, endDateTime: number): string[] => {
   const dates: string[] = [];
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = new Date(startDateTime);
+  const end = new Date(endDateTime);
   
   // Ensure start is not after end
   if (start > end) {
     return [];
   }
   
-  const currentDate = new Date(start);
-  while (currentDate <= end) {
-    dates.push(formatDateForAPI(new Date(currentDate)));
-    currentDate.setDate(currentDate.getDate() + 1);
+  // For datetime ranges, we'll generate slots at hourly intervals
+  // Starting from the start datetime to the end datetime
+  const currentDateTime = new Date(start);
+  
+  while (currentDateTime <= end) {
+    dates.push(formatDateForAPI(new Date(currentDateTime)));
+    // Add 1 hour for the next slot
+    currentDateTime.setHours(currentDateTime.getHours() + 1);
   }
   
   return dates;
@@ -162,8 +166,8 @@ const getAllTimeSlots = (): string[] => {
   const allDates: string[] = [];
   
   for (const range of timeSlotRanges.value) {
-    if (range.startDate && range.endDate) {
-      const rangeDates = generateDateRange(range.startDate, range.endDate);
+    if (range.startDateTime && range.endDateTime) {
+      const rangeDates = generateDateRange(range.startDateTime, range.endDateTime);
       allDates.push(...rangeDates);
     }
   }
@@ -187,16 +191,16 @@ const handleSubmit = async () => {
     }
 
     // Validate all ranges have both start and end dates
-    const incompleteRanges = timeSlotRanges.value.filter(range => !range.startDate || !range.endDate);
+    const incompleteRanges = timeSlotRanges.value.filter(range => !range.startDateTime || !range.endDateTime);
     if (incompleteRanges.length > 0) {
-      message.error('Please complete all time slot ranges with both start and end dates');
+      message.error('Please complete all time slot ranges with both start and end date/times');
       return;
     }
 
     // Validate ranges are in the future
     const now = Date.now();
     const invalidRanges = timeSlotRanges.value.filter(range => 
-      range.startDate! <= now || range.endDate! <= now
+      range.startDateTime! <= now || range.endDateTime! <= now
     );
     if (invalidRanges.length > 0) {
       message.error('All time slots must be in the future');
@@ -205,10 +209,10 @@ const handleSubmit = async () => {
 
     // Validate start dates are before or equal to end dates
     const invalidOrderRanges = timeSlotRanges.value.filter(range => 
-      range.startDate! > range.endDate!
+      range.startDateTime! > range.endDateTime!
     );
     if (invalidOrderRanges.length > 0) {
-      message.error('Start dates must be before or equal to end dates');
+      message.error('Start date/time must be before end date/time');
       return;
     }
 
@@ -420,36 +424,40 @@ onMounted(async () => {
                       </div>
                       
                       <div class="date-range-inputs">
-                        <div class="date-input-group">
-                          <label class="date-label">Start Date</label>
+                        <div class="datetime-input-group">
+                          <label class="date-label">Start Date & Time</label>
                           <NDatePicker
-                            v-model:value="range.startDate"
-                            type="date"
+                            v-model:value="range.startDateTime"
+                            type="datetime"
                             :is-date-disabled="(ts: number) => ts < Date.now() - 24 * 60 * 60 * 1000"
-                            placeholder="Select start date"
-                            class="date-picker"
+                            placeholder="Select start date and time"
+                            class="datetime-picker"
                             clearable
                           />
                         </div>
                         
-                        <div class="date-input-group">
-                          <label class="date-label">End Date</label>
+                        <div class="datetime-input-group">
+                          <label class="date-label">End Date & Time</label>
                           <NDatePicker
-                            v-model:value="range.endDate"
-                            type="date"
-                            :is-date-disabled="(ts: number) => ts < (range.startDate || Date.now() - 24 * 60 * 60 * 1000)"
-                            placeholder="Select end date"
-                            class="date-picker"
+                            v-model:value="range.endDateTime"
+                            type="datetime"
+                            :is-date-disabled="(ts: number) => ts < (range.startDateTime || Date.now() - 24 * 60 * 60 * 1000)"
+                            placeholder="Select end date and time"
+                            class="datetime-picker"
                             clearable
                           />
                         </div>
                       </div>
                       
-                      <div v-if="range.startDate && range.endDate" class="range-preview">
+                      <div v-if="range.startDateTime && range.endDateTime" class="range-preview">
                         <span class="preview-text">
-                          📅 {{ new Date(range.startDate).toLocaleDateString() }} - {{ new Date(range.endDate).toLocaleDateString() }}
+                          📅 {{ new Date(range.startDateTime).toLocaleString() }} - {{ new Date(range.endDateTime).toLocaleString() }}
                           <br>
-                          ({{ generateDateRange(range.startDate, range.endDate).length }} days)
+                          ⏰ {{ generateDateRange(range.startDateTime, range.endDateTime).length }} hourly time slots will be created
+                          <br>
+                          <small style="color: #666;">
+                            (Every hour from start time to end time)
+                          </small>
                         </span>
                       </div>
                     </div>
