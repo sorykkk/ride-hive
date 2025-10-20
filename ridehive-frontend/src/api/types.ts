@@ -155,7 +155,7 @@ export interface PostResponseDto {
   available: boolean;
 }
 
-// Owner interface
+// Owner mock interface
 export interface Owner {
   ownerId: string;
   name: string;
