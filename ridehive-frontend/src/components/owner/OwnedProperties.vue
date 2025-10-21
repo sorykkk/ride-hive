@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   NCard, 
@@ -21,10 +21,12 @@ import {
   SpeedometerOutline, 
   CarOutline } from '@vicons/ionicons5';
 import { carsApi, ApiError } from '@/api';
+import { useAuthStore } from '@/api/Auth';
 import type { CarResponseDto, CarImageData } from '@/api';
 
 const router = useRouter();
 const message = useMessage();
+const authStore = useAuthStore();
 
 // State
 const cars = ref<CarResponseDto[]>([]);
@@ -32,9 +34,8 @@ const loading = ref(false);
 const showDeleteModal = ref(false);
 const carToDelete = ref<CarResponseDto | null>(null);
 
-// Mock user ID - in real app this would come from auth store/context
-// TODO: Replace with actual authenticated user ID from auth service
-const currentUserId = "1";
+// Get current user ID from auth store
+const currentUserId = computed(() => authStore.user?.userId || '');
 
 // Navigate to add car page
 const addCar = () => {
@@ -81,9 +82,15 @@ const cancelDelete = () => {
 
 // Fetch user's cars
 const fetchUserCars = async () => {
+  if (!currentUserId.value) {
+    message.warning('Please login to view your cars');
+    router.push('/login');
+    return;
+  }
+
   try {
     loading.value = true;
-    cars.value = await carsApi.getCarsByOwner(currentUserId);
+    cars.value = await carsApi.getCarsByOwner(currentUserId.value);
     console.log('Loaded cars from API:', cars.value);
     
     // Debug: Check if cars have images

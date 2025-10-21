@@ -4,18 +4,24 @@ import TopNavigationBar from './components/navbar/TopNavigationBar.vue'
 import Footer from './components/Footer.vue'
 import { NMessageProvider } from 'naive-ui'
 // import { ApiClient, ApiConfig } from './services/api'
+import { useAuthStore } from '@/api/Auth'
+import { storeToRefs } from 'pinia'
+
+const auth = useAuthStore()
+const { isAuthenticated } = storeToRefs(auth)
+auth.checkAuth()
 
 </script>
 
 <template>
   <NMessageProvider>
     <div id="app">
-      <TopNavigationBar />
+      <TopNavigationBar v-if="isAuthenticated" />
       <!-- Main content area - now using router-view for dynamic pages -->
       <main>
         <router-view />
       </main>
-      <Footer />
+      <Footer v-if="isAuthenticated" />
     </div>
   </NMessageProvider>
 </template>
@@ -39,7 +45,7 @@ import { NMessageProvider } from 'naive-ui'
 
 main {
   flex: 1;
-  padding: 20px;
+  /* padding: 20px; */
   background-color: #f5f5f5;
 }
 </style>

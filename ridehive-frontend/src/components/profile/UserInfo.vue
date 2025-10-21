@@ -1,26 +1,35 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { NCard, NSpace, NAvatar, NButton, NTag, NGrid, NGridItem, NIcon } from 'naive-ui';
 import { SettingsOutline, CreateOutline, CalendarOutline, MailOutline, CallOutline, LocationOutline } from '@vicons/ionicons5';
+import { useAuthStore } from '@/api/Auth';
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
 const router = useRouter();
+const authStore = useAuthStore();
 
-// Mock user data - in real app this would come from auth store/API
-const user = ref({
-  id: 1,
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  phone: '+1 (555) 123-4567',
-  location: 'San Francisco, CA',
-  joinDate: '2024-01-15',
-  avatar: defaultProfilePic,
-  bio: 'Car enthusiast and ride-sharing advocate. I love exploring new places and meeting fellow travelers.',
-  verificationStatus: 'verified',
-  rating: 4.8,
-  totalRides: 127,
-  membershipType: 'Premium'
+// Computed user data from auth store
+const user = computed(() => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7000';
+  const profileImageUrl = authStore.user?.hasProfileImage
+    ? `${baseUrl}/api/user/profile/image/${authStore.user.userId}`
+    : defaultProfilePic;
+
+  return {
+    id: authStore.user?.userId,
+    name: `${authStore.user?.name || ''} ${authStore.user?.surname || ''}`.trim() || 'User',
+    email: authStore.user?.email || '',
+    phone: authStore.user?.phone ? `+${authStore.user.phone}` : 'Not provided',
+    location: authStore.user?.location || 'Not provided',
+    joinDate: authStore.user?.registeredAt || new Date().toISOString(),
+    avatar: profileImageUrl,
+    bio: authStore.user?.bio || 'No bio provided',
+    verificationStatus: 'verified', // TODO: Add verification status to user profile
+    rating: 0, // TODO: Add rating to user profile
+    totalRides: 0, // TODO: Add total rides to user profile
+    membershipType: authStore.user?.role || 'Client'
+  };
 });
 
 // Navigate to edit profile

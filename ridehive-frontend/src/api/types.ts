@@ -1,3 +1,14 @@
+// helper functions
+// Dynamic case conversion utilities
+export const toCamelCase = (str: string): string => {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+export const toPascalCase = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+
 // Type definitions for API models - matching backend JSON response (camelCase)
 export interface CarItem {
   carId: number;
@@ -155,19 +166,41 @@ export interface PostResponseDto {
   available: boolean;
 }
 
-// Owner mock interface
-export interface Owner {
-  ownerId: string;
-  name: string;
-  posts?: PostItem[];
+export interface UserAuthResponseDto {
+  userId: string
+  email: string
+  name: string
+  surname: string
+  role: 'Client' | 'Owner'
+  registeredAt: string
+  phone?: number
+  age?: number
+  bio?: string
+  location?: string
+  hasProfileImage?: boolean
 }
 
-// helper functions
-// Dynamic case conversion utilities
-export const toCamelCase = (str: string): string => {
-  return str.charAt(0).toLowerCase() + str.slice(1);
-};
+export interface UserLoginDto {
+  email: string
+  password: string
+}
 
-export const toPascalCase = (str: string): string => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+export interface UserRegisterDto {
+  name: string
+  surname: string
+  email: string
+  password: string
+  role: 'Client' | 'Owner'
+  age?: number
+  phone?: number
+  drivingLicenseImage?: File
+}
+
+export interface UpdateProfileDto {
+  name: string
+  surname: string
+  phone?: number
+  age?: number
+  bio?: string
+  location?: string
+}

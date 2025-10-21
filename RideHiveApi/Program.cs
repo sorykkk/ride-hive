@@ -1,46 +1,86 @@
-//use:
-// nswag openapi2tsclient /input:http://localhost:5030/swagger/v1/swagger.json /output:src/api/client.ts
-// for generating clien.ts with all api
-
 using RideHiveApi.Models.Settings;
 using RideHiveApi.Data;
+using RideHiveApi.Models;
 using RideHiveApi.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
 
 // Add Entity Framework with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure Identity
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    // Configuration for password
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+
+    // Configuration for user
+    options.User.RequireUniqueEmail = true;
+
+    // Configuration for lockout
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+//Configure Cookie Authentication pentru cross-origin
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // None pentru development (HTTP)
+    options.Cookie.SameSite = SameSiteMode.Lax; // Lax pentru cross-origin
+    options.Cookie.Name = "RideHive.Auth";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+    
+    // Return 401 instead of redirect pentru API
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
+});
+
+// Configurare Authentication & Authorization
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
+// Load CORS and API settings
 // Register image upload service
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
-var apiSettings = builder.Configuration.GetSection("ApiSettings").Get <ApiSettings> ()?? new ApiSettings();
+var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
 
-// Allow CORS (Cross-Origin Resource Sharing)
-// enables same origin policy (server explicitly allows browers send requests from one domain to another domain)
-// frontend communicates with backend
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", 
         policy => policy
-            //.AllowAnyOrigin()
-            // sets which frontend URLs are allowed
-            .WithOrigins(corsSettings.AllowedOrigins) // vue dev server
-            // Allows sending headers like Content-Type or Authorization
+            .WithOrigins(corsSettings.AllowedOrigins)
             .AllowAnyHeader()
-            // Allows GET, POST, PUT, DELETE
             .AllowAnyMethod()
+            .AllowCredentials()
     );
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -50,13 +90,18 @@ var app = builder.Build();
 // Commands for Entity Framework:
 //      dotnet ef migrations add <MigrationName>
 //      dotnet ef database update
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     context.Database.Migrate(); // This applies any pending migrations
+// }
+
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.Migrate(); // This applies any pending migrations
+    await DbInitializer.SeedRoles(scope.ServiceProvider);
 }
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -65,8 +110,10 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+//CORS must be before Authentication/Authorization
 app.UseCors("AllowFrontend");
 
+app.UseAuthentication();
 // Serve static files (images)
 app.UseStaticFiles();
 
