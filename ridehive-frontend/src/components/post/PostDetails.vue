@@ -281,7 +281,7 @@ onMounted(() => {
                       <NGridItem span="3 s:1">
                         <div class="spec-item">
                           <span class="spec-label">Engine Size:</span>
-                          <span class="spec-value">{{ car.displacement }}L</span>
+                          <span class="spec-value">{{ car.displacement }} cm³</span>
                         </div>
                       </NGridItem>
 
