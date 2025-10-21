@@ -1,6 +1,9 @@
 <!-- mock implementation -->
 <script setup lang="ts">
 import SearchBar from './navbar/SearchBar.vue'
+import { useAuthStore } from '@/api/Auth'
+
+const authStore = useAuthStore()
 
 // Handle search events
 const handleSearch = (query: string) => {
@@ -21,7 +24,7 @@ const handleSearchInput = (query: string) => {
       <SearchBar @search="handleSearch" @input="handleSearchInput" />
     </div>
 
-    <h1 class="welcome-text">Welcome @user.name!</h1>
+    <h1 class="welcome-text">Welcome {{ authStore.user?.name}} ({{ authStore.userRole}})!</h1>
 
     <div class="card">
       <p>Here is mock implementation</p>

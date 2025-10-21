@@ -1,27 +1,31 @@
 <script setup lang="ts">
 
-import { ref, h, watch } from 'vue'
+import { ref, h, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { Component } from 'vue'
-import { 
-  HomeOutline, 
-  AddOutline, 
-  NotificationsOutline, 
+import {
+  HomeOutline,
+  AddOutline,
+  NotificationsOutline,
   InformationCircleOutline,
   Albums } from '@vicons/ionicons5'
-import { 
-  NLayoutHeader, 
-  NMenu, 
-  NSpace, 
-  NIcon, 
+import {
+  NLayoutHeader,
+  NMenu,
+  NSpace,
+  NIcon,
   NButton,
   NBadge } from 'naive-ui'
 import type { MenuProps } from 'naive-ui'
 import ProfileDropdown from './ProfileDropdown.vue'
+import { useAuthStore } from '@/api/Auth'
 
 // Router setup
 const router = useRouter()
 const route = useRoute()
+
+// Auth store
+const authStore = useAuthStore()
 
 // builds the VNode rendering a naive-ui Component icon
 function renderIcon(icon: Component) {
@@ -49,28 +53,36 @@ const menuThemeOverrides: MenuThemeOverrides = {
 const activeKey = ref<string | null>(route.name?.toString() || null) // holds currently selected menu
 const isPostHovered = ref(false)
 
-// Only include primary navigation items here. Profile is rendered on the right
-const menuOptions = [
-  {
-    label: 'Home',
-    key: 'home',
-    icon: renderIcon(HomeOutline)
-  },
-  {
-    label: 'About',
-    key: 'about',
-    icon: renderIcon(InformationCircleOutline)
-  },
-  {
-    label: 'My posts',
-    key: 'owner-posts',
-    icon: renderIcon(Albums)
+// Computed menu options based on user role
+const menuOptions = computed(() => {
+  const baseOptions = [
+    {
+      label: 'Home',
+      key: 'home',
+      icon: renderIcon(HomeOutline)
+    },
+    {
+      label: 'About',
+      key: 'about',
+      icon: renderIcon(InformationCircleOutline)
+    }
+  ]
+
+  // Add "My posts" only for Owners
+  if (authStore.isOwner) {
+    baseOptions.push({
+      label: 'My posts',
+      key: 'owner-posts',
+      icon: renderIcon(Albums)
+    })
   }
-]
+
+  return baseOptions
+})
 
 // Watch route changes to update active menu item
 watch(() => route.name, (newRouteName) => {
-  if (newRouteName && menuOptions.map(option => option.key).includes(newRouteName.toString())) {
+  if (newRouteName && menuOptions.value.map(option => option.key).includes(newRouteName.toString())) {
     activeKey.value = newRouteName.toString()
   } else {
     // For routes that aren't in the menu (like create-post), clear selection
@@ -122,8 +134,9 @@ const handleNotificationsClick = () => {
           :theme-overrides="menuThemeOverrides"
           @update:value="handleMenuSelect"
         />
-        <!-- Post Button directly next to Home -->
+        <!-- Post Button directly next to Home - Only visible for Owners -->
         <NButton
+          v-if="authStore.isOwner"
           type="success"
           circle
           :class="{ 'post-button-expanded': isPostHovered }"

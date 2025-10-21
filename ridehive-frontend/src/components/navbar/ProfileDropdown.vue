@@ -22,33 +22,45 @@ function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) })
 }
 
-// Profile dropdown options - icons need to be render functions for NDropdown
-const profileOptions = [
-  {
-    label: 'My Profile',
-    key: 'profile',
-    icon: renderIcon(PersonOutline)
-  },
-  {
-    label: 'Owned properties',
-    key: 'owned-prop', 
-    icon: renderIcon(LayersOutline)
-  },
-  {
-    label: 'Settings',
-    key: 'settings',
-    icon: renderIcon(SettingsOutline)
-  },
-  {
-    type: 'divider',
-    key: 'divider1'
-  },
-  {
-    label: 'Log Out',
-    key: 'logout',
-    icon: renderIcon(LogOutOutline)
+// Profile dropdown options - computed to show different options based on role
+const profileOptions = computed(() => {
+  const baseOptions: Array<any> = [
+    {
+      label: 'My Profile',
+      key: 'profile',
+      icon: renderIcon(PersonOutline)
+    }
+  ]
+
+  // Add "Owned properties" only for Owners
+  if (authStore.isOwner) {
+    baseOptions.push({
+      label: 'Owned properties',
+      key: 'owned-prop',
+      icon: renderIcon(LayersOutline)
+    })
   }
-]
+
+  // Add remaining common options
+  baseOptions.push(
+    {
+      label: 'Settings',
+      key: 'settings',
+      icon: renderIcon(SettingsOutline)
+    },
+    {
+      type: 'divider',
+      key: 'divider1'
+    },
+    {
+      label: 'Log Out',
+      key: 'logout',
+      icon: renderIcon(LogOutOutline)
+    }
+  )
+
+  return baseOptions
+})
 
 // Computed properties for user data from auth store
 const userDisplayName = computed(() => {
