@@ -16,25 +16,27 @@ import {
   NDivider
 } from 'naive-ui';
 import { postsApi, carsApi, ApiError } from '@/api';
+import { useAuthStore } from '@/api/Auth';
 import type { PostResponseDto, CarResponseDto } from '@/api/types';
 import { formatDateForDisplay, getAvailableDates } from '@/utils/dateUtils';
 
 const router = useRouter();
 const message = useMessage();
+const authStore = useAuthStore();
 
 // State
 const posts = ref<PostResponseDto[]>([]);
 const cars = ref<Map<number, CarResponseDto>>(new Map());
 const loading = ref(false);
 
-// TODO: Replace with actual authenticated user ID from auth service
-const currentUserId = "1";
-
 // Load user's posts
 const loadPosts = async () => {
   try {
     loading.value = true;
-    posts.value = await postsApi.getPostsByOwner(currentUserId);
+    if (!authStore.user?.userId) {
+      throw new Error('User not authenticated');
+    }
+    posts.value = await postsApi.getPostsByOwner(authStore.user.userId);
     
     // Load car details for all posts
     const carIds = [...new Set(posts.value.map(post => post.carId))];

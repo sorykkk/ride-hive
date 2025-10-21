@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace RideHiveApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialAdd : Migration
+    public partial class addInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -246,13 +246,19 @@ namespace RideHiveApi.Migrations
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     SpecialRequirements = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
                     Location = table.Column<string>(type: "text", nullable: false),
-                    AvailableTimeSlots = table.Column<DateTime[]>(type: "timestamp with time zone[]", nullable: false),
+                    AvailableTimeSlots = table.Column<string>(type: "text", nullable: false),
                     PostedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Available = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PostItems", x => x.PostId);
+                    table.ForeignKey(
+                        name: "FK_PostItems_CarItems_CarId",
+                        column: x => x.CarId,
+                        principalTable: "CarItems",
+                        principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PostItems_Owners_OwnerId",
                         column: x => x.OwnerId,
@@ -323,6 +329,16 @@ namespace RideHiveApi.Migrations
                 table: "CarItems",
                 column: "VinNumber",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Owners_Name",
+                table: "Owners",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostItems_CarId",
+                table: "PostItems",
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostItems_OwnerId",

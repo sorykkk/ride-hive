@@ -204,3 +204,13 @@ export interface UpdateProfileDto {
   bio?: string
   location?: string
 }
+
+// Basic user info for displaying owner names, etc.
+export interface BasicUserInfo {
+  userId: string
+  name: string
+  surname: string
+  fullName: string
+  role: 'Client' | 'Owner'
+  hasProfileImage: boolean
+}

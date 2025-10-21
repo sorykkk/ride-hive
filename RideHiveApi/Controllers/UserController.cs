@@ -301,6 +301,25 @@ namespace RideHiveApi.Controllers
             return Ok(new { message = "Profile image deleted successfully" });
         }
 
+        // GET: api/user/basic-info/{userId} - Get basic user information
+        [HttpGet("basic-info/{userId}")]
+        public async Task<IActionResult> GetBasicUserInfo(string userId)
+        {
+            var user = await this.userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            return Ok(new
+            {
+                userId = user.Id,
+                name = user.Name,
+                surname = user.Surname,
+                fullName = $"{user.Name} {user.Surname}",
+                role = (await this.userManager.GetRolesAsync(user)).FirstOrDefault(),
+                hasProfileImage = user.ProfileImage != null
+            });
+        }
+
         // POST: api/user/sync-owners - Sync existing Owner users
         [HttpPost("sync-owners")]
         public async Task<IActionResult> SyncOwners()

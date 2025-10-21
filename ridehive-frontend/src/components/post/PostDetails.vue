@@ -17,24 +17,21 @@ import {
   NEmpty,
   useMessage
 } from 'naive-ui';
-import { postsApi, carsApi, ownersApi, ApiError } from '@/api';
-import type { PostResponseDto, CarResponseDto, Owner } from '@/api/types';
+import { postsApi, carsApi, ApiError } from '@/api';
+import { useAuthStore } from '@/api/Auth';
+import type { PostResponseDto, CarResponseDto } from '@/api/types';
 import { formatDateForDisplay, getAvailableDates, groupTimeSlots } from '@/utils/dateUtils';
 
 const router = useRouter();
 const route = useRoute();
 const message = useMessage();
+const authStore = useAuthStore();
 
 // State
 const post = ref<PostResponseDto | null>(null);
 const car = ref<CarResponseDto | null>(null);
-const owner = ref<Owner | null>(null);
 const loading = ref(false);
 const loadingCar = ref(false);
-const loadingOwner = ref(false);
-
-// TODO: Replace with actual authenticated user ID from auth service
-const currentUserId = "1";
 
 // Post ID from route parameter
 const postId = computed(() => {
@@ -44,7 +41,7 @@ const postId = computed(() => {
 
 // Check if current user is the owner
 const isOwner = computed(() => {
-  return post.value?.ownerId === currentUserId;
+  return post.value?.ownerId === authStore.user?.userId;
 });
 
 // Get available time slots grouped into ranges
@@ -70,11 +67,6 @@ const loadPost = async () => {
     if (post.value.carId) {
       await loadCarDetails(post.value.carId);
     }
-    
-    // Load owner details
-    if (post.value.ownerId) {
-      await loadOwnerDetails(post.value.ownerId);
-    }
   } catch (error) {
     console.error('Failed to load post:', error);
     if (error instanceof ApiError) {
@@ -98,19 +90,6 @@ const loadCarDetails = async (carId: number) => {
     // Don't show error for car loading, just log it
   } finally {
     loadingCar.value = false;
-  }
-};
-
-// Load owner details
-const loadOwnerDetails = async (ownerId: string) => {
-  try {
-    loadingOwner.value = true;
-    owner.value = await ownersApi.getOwnerById(ownerId);
-  } catch (error) {
-    console.error('Failed to load owner details:', error);
-    // Don't show error for owner loading, just log it
-  } finally {
-    loadingOwner.value = false;
   }
 };
 
@@ -194,14 +173,6 @@ onMounted(() => {
                     <div class="info-content">
                       <div class="info-label">Posted</div>
                       <div class="info-value">{{ formatDateForDisplay(post.postedAt) }}</div>
-                    </div>
-                  </div>
-
-                  <div class="info-item">
-                    <span class="info-icon">👤</span>
-                    <div class="info-content">
-                      <div class="info-label">Owner</div>
-                      <div class="info-value">{{ owner?.name || post.ownerId }}</div>
                     </div>
                   </div>
                 </div>
@@ -362,6 +333,7 @@ onMounted(() => {
           </NGridItem>
 
           <!-- Contact Section (for non-owners) -->
+           <!-- TODO: to modify this part -->
           <NGridItem v-if="!isOwner">
             <NCard title="Interested in this rental?">
               <div class="contact-section">

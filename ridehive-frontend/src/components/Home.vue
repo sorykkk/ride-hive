@@ -16,19 +16,18 @@ import {
   useMessage
 } from 'naive-ui';
 import SearchBar from './navbar/SearchBar.vue';
-import { postsApi, carsApi, ownersApi, ApiError } from '@/api';
-import type { PostResponseDto, CarResponseDto, Owner } from '@/api/types';
+import { postsApi, carsApi, usersApi, ApiError } from '@/api';
+import { useAuthStore } from '@/api/Auth';
+import type { PostResponseDto, CarResponseDto, BasicUserInfo } from '@/api/types';
 
 const router = useRouter();
 const message = useMessage();
-
-// TODO: Replace with actual authenticated user from auth service
-const currentUser = ref({ name: 'John' }); // This should come from your auth system
+const authStore = useAuthStore();
 
 // State
 const posts = ref<PostResponseDto[]>([]);
 const cars = ref<Map<number, CarResponseDto>>(new Map());
-const owners = ref<Map<string, Owner>>(new Map());
+const users = ref<Map<string, BasicUserInfo>>(new Map());
 const loading = ref(false);
 const windowWidth = ref(window.innerWidth);
 
@@ -64,14 +63,14 @@ const loadPosts = async () => {
       }
     }
     
-    // Load owner details for each post
-    const ownerIds = [...new Set(allPosts.map(post => post.ownerId))];
-    for (const ownerId of ownerIds) {
+    // Optionally load user details for each post (for displaying owner names)
+    const userIds = [...new Set(allPosts.map(post => post.ownerId))];
+    for (const userId of userIds) {
       try {
-        const owner = await ownersApi.getOwnerById(ownerId);
-        owners.value.set(ownerId, owner);
+        const user = await usersApi.getBasicUserInfo(userId);
+        users.value.set(userId, user);
       } catch (error) {
-        console.warn(`Failed to load owner ${ownerId}:`, error);
+        console.warn(`Failed to load user ${userId}:`, error);
       }
     }
     
@@ -129,7 +128,7 @@ onUnmounted(() => {
       <SearchBar @search="handleSearch" @input="handleSearchInput" />
     </div>
 
-    <h1 class="welcome-text">Welcome {{ currentUser.name }}!</h1>
+    <h1 class="welcome-text">Welcome {{ authStore.user?.name }}!</h1>
 
     <!-- Loading state -->
     <NSpin v-if="loading" size="large" style="margin: 40px 0;">
@@ -202,7 +201,7 @@ onUnmounted(() => {
               <div class="post-meta">
                 <NText depth="2" class="location">📍 {{ post.location }}</NText>
                 <NText depth="3" class="owner">
-                  by {{ owners.get(post.ownerId)?.name || 'Unknown' }}
+                  by {{ users.get(post.ownerId)?.fullName || 'Owner' }}
                 </NText>
               </div>
 

@@ -76,19 +76,23 @@ const routes = [
     path: '/edit-profile',
     name: 'edit-profile',
     component: EditProfile,
-    meta: { title: 'Edit Profile - RideHive' }
+    meta: { title: 'Edit Profile - RideHive', requiresAuth: true }
   },
   {
     path: '/settings',
     name: 'settings',
     component: Settings,
-    meta: { title: 'Settings - RideHive' }
+    meta: { title: 'Settings - RideHive', requiresAuth: true }
   },
   {
     path: '/owned-properties',
     name: 'owned-prop',
     component: OwnedProperties,
-    meta: { title: 'Owned Properties - RideHive' }
+    meta: { 
+      title: 'Owned Properties - RideHive', 
+      requiresAuth: true, 
+      requiresRole: 'Owner'
+    }
   },
   {
     path: '/add-car',
@@ -104,19 +108,27 @@ const routes = [
     path: '/edit-car/:id',
     name: 'edit-car',
     component: EditCar,
-    meta: { title: 'Edit Car - RideHive' }
+    meta: { 
+      title: 'Edit Car - RideHive',
+      requiresAuth: true, 
+      requiresRole: 'Owner'
+    }
   },
   {
     path: '/my-posts',
     name: 'owner-posts',
     component: OwnerPosts,
-    meta: {title: "My Posts - RideHive"}
+    meta: {
+      title: "My Posts - RideHive",
+      requiresAuth: true, 
+      requiresRole: 'Owner'
+    }
   },
   {
     path: '/post/:id',
     name: 'post-details',
     component: () => import('@/components/post/PostDetails.vue'),
-    meta: {title: "Post Details - RideHive"}
+    meta: {title: "Post Details - RideHive", requiresAuth: true}
   }
 ]
 

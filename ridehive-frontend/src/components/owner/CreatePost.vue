@@ -23,6 +23,7 @@ import {
   type SelectOption
 } from 'naive-ui';
 import { carsApi, postsApi, ApiError } from '@/api';
+import { useAuthStore } from '@/api/Auth';
 import type { PostCreateDto, CarResponseDto } from '@/api/types';
 
 // Form interface allowing null carId initially
@@ -33,6 +34,7 @@ import { formatDateForAPI } from '@/utils/dateUtils';
 
 const router = useRouter();
 const message = useMessage();
+const authStore = useAuthStore();
 
 // Form reference
 const formRef = ref<FormInst | null>(null);
@@ -41,9 +43,6 @@ const formRef = ref<FormInst | null>(null);
 const loading = ref(false);
 const saving = ref(false);
 const loadingCars = ref(false);
-
-// TODO: Replace with actual authenticated user ID from auth service
-const currentUserId = "1";
 
 // User's cars for selection
 const userCars = ref<CarResponseDto[]>([]);
@@ -60,7 +59,7 @@ const nextRangeId = ref(1);
 
 // Form data
 const formData = ref<PostFormData>({
-  ownerId: currentUserId,
+  ownerId: authStore.user?.userId || '',
   carId: null,
   title: '',
   description: '',
@@ -119,7 +118,10 @@ const rules: FormRules = {
 const loadUserCars = async () => {
   try {
     loadingCars.value = true;
-    userCars.value = await carsApi.getCarsByOwner(currentUserId);
+    if (!authStore.user?.userId) {
+      throw new Error('User not authenticated');
+    }
+    userCars.value = await carsApi.getCarsByOwner(authStore.user.userId);
   } catch (error) {
     console.error('Failed to load cars:', error);
     if (error instanceof ApiError) {
