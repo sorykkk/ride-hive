@@ -76,7 +76,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(corsSettings.AllowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials() // 🔥 Important for cookies
+            .AllowCredentials()
     );
 });
 
@@ -86,11 +86,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Seed roles on startup
 // Apply pending migrations on startup (for development)
 // Commands for Entity Framework:
 //      dotnet ef migrations add <MigrationName>
 //      dotnet ef database update
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     context.Database.Migrate(); // This applies any pending migrations
+// }
+
 using (var scope = app.Services.CreateScope())
 {
     await DbInitializer.SeedRoles(scope.ServiceProvider);
@@ -101,6 +106,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // Only use HTTPS redirection in production
+    app.UseHttpsRedirection();
 }
 
 //CORS must be before Authentication/Authorization
