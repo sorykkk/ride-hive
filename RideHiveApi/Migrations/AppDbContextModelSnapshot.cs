@@ -399,7 +399,7 @@ namespace RideHiveApi.Migrations
 
                     b.HasKey("OwnerId");
 
-                    b.ToTable("Owner");
+                    b.ToTable("Owners");
                 });
 
             modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
