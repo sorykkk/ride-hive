@@ -89,7 +89,7 @@ const rules: FormRules = {
   carId: [
     { 
       required: true, 
-      message: 'Please select a car', 
+      message: 'Please select a car or register one in your owned properties', 
       trigger: 'change',
       validator: (_rule: any, value: any) => {
         return value != null && value !== 0;
