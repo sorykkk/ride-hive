@@ -49,21 +49,38 @@ namespace RideHiveApi.Data
                 }
             );
 
-            // Configure PostItem emtity
+            // Configure PostItem entity
             modelBuilder.Entity<PostItem>(entity =>
                 {
                     entity.HasKey(e => e.PostId);
                     entity.Property(e => e.PostId).ValueGeneratedOnAdd();
 
-                    // Relationship with Owner
+                    // Configure relationship with Owner
                     entity.HasOne(p => p.Owner)
-                    .WithMany(o => o.Posts)
-                    .HasForeignKey(p => p.OwnerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany(o => o.Posts)
+                        .HasForeignKey(p => p.OwnerId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Car (cascade delete when car is deleted)
+                    entity.HasOne(p => p.Car)
+                        .WithMany()
+                        .HasForeignKey(p => p.CarId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     // Configure indexes
                     entity.HasIndex(e => e.OwnerId);
+                    entity.HasIndex(e => e.CarId);
                     entity.HasIndex(e => e.PostedAt);
+                }
+            );
+
+            // Configure Owner entity
+            modelBuilder.Entity<Owner>(entity =>
+                {
+                    entity.HasKey(e => e.OwnerId);
+                    
+                    // Configure indexes
+                    entity.HasIndex(e => e.Name);
                 }
             );
 
@@ -83,11 +100,19 @@ namespace RideHiveApi.Data
             modelBuilder.Entity<CarItem>()
                 .Property(e => e.Body)
                 .HasConversion<string>();
-
+            
             modelBuilder.Entity<CarItem>()
                 .Property(e => e.Condition)
                 .HasConversion<string>();
-                
+
+            // Configure AvailableTimeSlots to be stored as JSON
+            modelBuilder.Entity<PostItem>()
+                .Property(e => e.AvailableTimeSlots)
+                .HasConversion(
+                    timeSlots => System.Text.Json.JsonSerializer.Serialize(timeSlots, new System.Text.Json.JsonSerializerOptions()),
+                    json => System.Text.Json.JsonSerializer.Deserialize<List<DateTime>>(json, new System.Text.Json.JsonSerializerOptions()) ?? new List<DateTime>()
+                );
+
             modelBuilder.Entity<AppUser>(entity =>
             {
                 entity.Property(e => e.Name).HasMaxLength(100);

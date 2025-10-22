@@ -1,12 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-// Sample stats that could later come from your backend
+// Helper: generate a random number between min and max (inclusive)
+function randomBetween(min: number, max: number, decimals = 0) {
+  const rand = Math.random() * (max - min) + min
+  return parseFloat(rand.toFixed(decimals))
+}
+
+// Reactive stats object
 const stats = ref({
-  totalRides: 15420,
-  activeUsers: 2840,
-  citiesCovered: 12,
-  carbonSaved: 45.2 // tons
+  totalRides: 0,
+  activeUsers: 0,
+  citiesCovered: 0,
+})
+
+// Generate random stats when component mounts
+onMounted(() => {
+  stats.value = {
+    totalRides: Math.floor(randomBetween(5_000, 20_000)),
+    activeUsers: Math.floor(randomBetween(2_000, 10_000)),
+    citiesCovered: Math.floor(randomBetween(5, 25)),
+  }
 })
 </script>
 
@@ -17,7 +31,7 @@ const stats = ref({
       <div class="hero-content">
         <h1>About RideHive</h1>
         <p class="hero-subtitle">
-          Connecting communities through sustainable ride-sharing solutions
+          Connecting communities through more efficient car renting solutions
         </p>
       </div>
     </section>
@@ -55,7 +69,7 @@ const stats = ref({
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-number">{{ stats.totalRides.toLocaleString() }}</div>
-            <div class="stat-label">Rides Shared</div>
+            <div class="stat-label">Rented cars</div>
           </div>
           <div class="stat-card">
             <div class="stat-number">{{ stats.activeUsers.toLocaleString() }}</div>
@@ -65,10 +79,6 @@ const stats = ref({
             <div class="stat-number">{{ stats.citiesCovered }}</div>
             <div class="stat-label">Cities Covered</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.carbonSaved }}t</div>
-            <div class="stat-label">CO₂ Saved</div>
-          </div>
         </div>
       </div>
     </section>
@@ -76,7 +86,7 @@ const stats = ref({
     <!-- Features Section -->
     <section class="content-section">
       <div class="container">
-        <h2>Why Choose RideHive?</h2>
+        <h2 style="color: #004d96">Why Choose RideHive?</h2>
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">🔒</div>
@@ -108,8 +118,15 @@ const stats = ref({
         <h2>Ready to Start Sharing?</h2>
         <p>Join thousands of users who are already making a difference</p>
         <div class="cta-buttons">
-          <button class="btn-primary">Find a Ride</button>
-          <button class="btn-secondary">Offer a Ride</button>
+          <!-- This should be a router link -->
+           <!-- Find a Ride button only for client
+            Offer a Rent for owner -->
+          <router-link to="/">
+            <button class="btn-primary">Rent a Car</button>
+          </router-link>
+          <router-link to="/create-post">
+            <button class="btn-secondary">Offer a Rent</button>
+          </router-link>
         </div>
       </div>
     </section>
