@@ -36,8 +36,8 @@ namespace RideHiveApi.Models
 
         public bool Available { get; set; }
 
-        // Navigation property
-        [Required]
-        public Owner Owner { get; set; } = null!;
+        // Navigation properties
+        public Owner? Owner { get; set; }
+        public CarItem? Car { get; set; }
     }
 }

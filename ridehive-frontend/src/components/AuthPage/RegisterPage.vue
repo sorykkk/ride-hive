@@ -4,7 +4,6 @@
       <!-- Logo -->
       <div class="auth-logo">
         <img src="@/assets/logo/logo-1.png" alt="RideHive" />
-        <h1>RideHive</h1>
       </div>
 
       <n-h2 class="text-center">Create Account</n-h2>
@@ -123,10 +122,10 @@
           </n-gi>
         </n-grid>
 
-        <!-- Driving License (Client only) -->
+        <!-- Driving License (Client only - Required) -->
         <n-form-item 
           v-if="form.role === 'Client'" 
-          label="Driving License (optional)"
+          label="Driving License"
           path="drivingLicenseImage"
         >
           <n-upload
@@ -137,12 +136,12 @@
             @before-upload="beforeUpload"
           >
             <n-button :disabled="authStore.isLoading">
-              Upload License
+              {{ form.drivingLicenseImage ? 'Change License' : 'Upload License' }}
             </n-button>
           </n-upload>
           <template #feedback>
             <n-text depth="3" style="font-size: 12px;">
-              JPG, JPEG, PNG (max 5MB)
+              Required for clients - JPG, JPEG, PNG (max 5MB)
             </n-text>
           </template>
         </n-form-item>
@@ -183,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/api/Auth'
 import {
@@ -213,6 +212,11 @@ const router = useRouter()
 const authStore = useAuthStore()
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
+
+// Clear any previous errors when component mounts
+onMounted(() => {
+  authStore.error = null
+})
 
 const form = ref({
   name: '',
@@ -244,6 +248,20 @@ const rules: FormRules = {
   ],
   role: [
     { required: true, message: 'Please select a role', trigger: 'change' }
+  ],
+  drivingLicenseImage: [
+    { 
+      required: true, 
+      message: 'Driving license is required for client registration', 
+      trigger: 'change',
+      validator: (_rule: any, value: any) => {
+        // Only validate if user selected Client role
+        if (form.value.role === 'Client') {
+          return !!value;
+        }
+        return true;
+      }
+    }
   ]
 }
 
@@ -269,6 +287,12 @@ const handleRegister = async () => {
     await formRef.value?.validate()
     successMessage.value = ''
     
+    // Additional check for driving license if client role
+    if (form.value.role === 'Client' && !form.value.drivingLicenseImage) {
+      message.error('Please upload your driving license image')
+      return
+    }
+    
     await authStore.register(form.value)
     
     successMessage.value = 'Account created successfully! Redirecting to login...'
@@ -284,7 +308,7 @@ const handleRegister = async () => {
 
 <style scoped>
 .auth-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,19 +319,20 @@ const handleRegister = async () => {
 .auth-card {
   width: 100%;
   max-width: 500px;
+  padding-top: 1rem !important; /* reduce top padding */
 }
 
 .auth-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
 }
 
 .auth-logo img {
-  width: 72px;
-  height: 72px;
-  margin-bottom: 0.75rem;
+  width: auto;
+  max-height: 72px;
+  /* margin-bottom: 0.75rem; */
 }
 
 .auth-logo h1 {

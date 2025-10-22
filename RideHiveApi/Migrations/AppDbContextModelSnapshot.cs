@@ -399,6 +399,8 @@ namespace RideHiveApi.Migrations
 
                     b.HasKey("OwnerId");
 
+                    b.HasIndex("Name");
+
                     b.ToTable("Owners");
                 });
 
@@ -413,9 +415,9 @@ namespace RideHiveApi.Migrations
                     b.Property<bool>("Available")
                         .HasColumnType("boolean");
 
-                    b.PrimitiveCollection<DateTime[]>("AvailableTimeSlots")
+                    b.Property<string>("AvailableTimeSlots")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone[]");
+                        .HasColumnType("text");
 
                     b.Property<int>("CarId")
                         .HasColumnType("integer");
@@ -447,6 +449,8 @@ namespace RideHiveApi.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("PostId");
+
+                    b.HasIndex("CarId");
 
                     b.HasIndex("OwnerId");
 
@@ -517,11 +521,19 @@ namespace RideHiveApi.Migrations
 
             modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
                 {
+                    b.HasOne("RideHiveApi.Models.CarItem", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("RideHiveApi.Models.Owner", "Owner")
                         .WithMany("Posts")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Car");
 
                     b.Navigation("Owner");
                 });

@@ -20,7 +20,7 @@ import {
   type FormRules
 } from 'naive-ui';
 import { carsApi, ApiError } from '@/api';
-import type { CarUpdateDto, CarItem } from '@/api/types';
+import type { CarUpdateDto } from '@/api/types';
 
 const router = useRouter();
 const route = useRoute();
@@ -133,9 +133,9 @@ const validationRules = computed(() => createDynamicRules());
 const loadCarData = async () => {
   try {
     loading.value = true;
-    const car: CarItem = await carsApi.getCarById(carId.value);
+    const car = await carsApi.getCarById(carId.value);
     
-    // Map CarItem to CarUpdateDto (only updatable fields)
+    // Map CarResponseDto to CarUpdateDto (only updatable fields)
     formData.value = {
       brand: car.brand,
       model: car.model,

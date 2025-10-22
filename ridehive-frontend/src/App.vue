@@ -45,7 +45,7 @@ auth.checkAuth()
 
 main {
   flex: 1;
-  /* padding: 20px; */
+  padding: 20px;
   background-color: #f5f5f5;
 }
 </style>

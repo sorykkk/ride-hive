@@ -74,6 +74,12 @@ export interface CarResponseDto {
   displacement: number;
   horsePower: number;
   vinNumber: string;
+  // Enum values (for form editing)
+  fuel: string;
+  drive: string;
+  transmission: string;
+  body: string;
+  condition: string;
   // Display values (user-friendly descriptions from backend)
   fuelDisplay: string;
   driveDisplay: string;
@@ -124,6 +130,47 @@ export interface EnumCollections {
   conditionTypes: EnumOption[];
 }
 
+// Post-related interfaces
+export interface PostItem {
+  postId: number;
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+  postedAt: string;
+  available: boolean;
+  // Optional car data for display (when populated)
+  car?: CarItem;
+}
+
+export interface PostCreateDto {
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+}
+
+export interface PostResponseDto {
+  postId: number;
+  ownerId: string;
+  carId: number;
+  title: string;
+  description?: string;
+  price: number;
+  specialRequirements?: string;
+  location: string;
+  availableTimeSlots: string[];
+  postedAt: string;
+  available: boolean;
+}
 
 export interface UserAuthResponseDto {
   userId: string
@@ -162,4 +209,14 @@ export interface UpdateProfileDto {
   age?: number
   bio?: string
   location?: string
+}
+
+// Basic user info for displaying owner names, etc.
+export interface BasicUserInfo {
+  userId: string
+  name: string
+  surname: string
+  fullName: string
+  role: 'Client' | 'Owner'
+  hasProfileImage: boolean
 }

@@ -10,7 +10,7 @@ import {
   ChevronDownOutline,
   LayersOutline
 } from '@vicons/ionicons5'
-import { useAuthStore } from "../../api/Auth"
+import { useAuthStore } from "@/api/Auth"
 import defaultProfilePic from '@/assets/profile/default-profile-pic-1.png'
 
 // Router setup
