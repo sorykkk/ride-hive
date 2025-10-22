@@ -4,7 +4,6 @@
       <!-- Logo -->
       <div class="auth-logo">
         <img src="@/assets/logo/logo-1.png" alt="RideHive" />
-        <h1>RideHive</h1>
       </div>
 
       <n-h2 class="text-center">Create Account</n-h2>
@@ -309,7 +308,7 @@ const handleRegister = async () => {
 
 <style scoped>
 .auth-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,19 +319,20 @@ const handleRegister = async () => {
 .auth-card {
   width: 100%;
   max-width: 500px;
+  padding-top: 1rem !important; /* reduce top padding */
 }
 
 .auth-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
 }
 
 .auth-logo img {
-  width: 72px;
-  height: 72px;
-  margin-bottom: 0.75rem;
+  width: auto;
+  max-height: 72px;
+  /* margin-bottom: 0.75rem; */
 }
 
 .auth-logo h1 {
