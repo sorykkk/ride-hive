@@ -74,6 +74,12 @@ export interface CarResponseDto {
   displacement: number;
   horsePower: number;
   vinNumber: string;
+  // Enum values (for form editing)
+  fuel: string;
+  drive: string;
+  transmission: string;
+  body: string;
+  condition: string;
   // Display values (user-friendly descriptions from backend)
   fuelDisplay: string;
   driveDisplay: string;

@@ -112,7 +112,7 @@ const rules: FormRules = {
 const handleLogin = async () => {
   try {
     await formRef.value?.validate()
-    const user = await authStore.login(form.value)
+    await authStore.login(form.value)
     router.push('/home') 
   } catch (error) {
     console.error('Login failed:', error)
