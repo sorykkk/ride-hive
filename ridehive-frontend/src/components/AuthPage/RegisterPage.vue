@@ -123,10 +123,10 @@
           </n-gi>
         </n-grid>
 
-        <!-- Driving License (Client only) -->
+        <!-- Driving License (Client only - Required) -->
         <n-form-item 
           v-if="form.role === 'Client'" 
-          label="Driving License (optional)"
+          label="Driving License"
           path="drivingLicenseImage"
         >
           <n-upload
@@ -137,12 +137,12 @@
             @before-upload="beforeUpload"
           >
             <n-button :disabled="authStore.isLoading">
-              Upload License
+              {{ form.drivingLicenseImage ? 'Change License' : 'Upload License' }}
             </n-button>
           </n-upload>
           <template #feedback>
             <n-text depth="3" style="font-size: 12px;">
-              JPG, JPEG, PNG (max 5MB)
+              Required for clients - JPG, JPEG, PNG (max 5MB)
             </n-text>
           </template>
         </n-form-item>
@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/api/Auth'
 import {
@@ -213,6 +213,11 @@ const router = useRouter()
 const authStore = useAuthStore()
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
+
+// Clear any previous errors when component mounts
+onMounted(() => {
+  authStore.error = null
+})
 
 const form = ref({
   name: '',
@@ -244,6 +249,20 @@ const rules: FormRules = {
   ],
   role: [
     { required: true, message: 'Please select a role', trigger: 'change' }
+  ],
+  drivingLicenseImage: [
+    { 
+      required: true, 
+      message: 'Driving license is required for client registration', 
+      trigger: 'change',
+      validator: (_rule: any, value: any) => {
+        // Only validate if user selected Client role
+        if (form.value.role === 'Client') {
+          return !!value;
+        }
+        return true;
+      }
+    }
   ]
 }
 
@@ -268,6 +287,12 @@ const handleRegister = async () => {
   try {
     await formRef.value?.validate()
     successMessage.value = ''
+    
+    // Additional check for driving license if client role
+    if (form.value.role === 'Client' && !form.value.drivingLicenseImage) {
+      message.error('Please upload your driving license image')
+      return
+    }
     
     await authStore.register(form.value)
     

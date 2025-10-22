@@ -41,6 +41,12 @@ namespace RideHiveApi.Controllers
             if (existingUser != null)
                 return BadRequest(new { message = "Email already exists" });
 
+            // If Client role, driving license is mandatory
+            if (model.Role == "Client" && model.DrivingLicenseImage == null)
+            {
+                return BadRequest(new { message = "Driving license image is required for client registration" });
+            }
+
             //Create user
             var user = new AppUser
             {
@@ -53,7 +59,7 @@ namespace RideHiveApi.Controllers
                 Phone = model.Phone
             };
 
-            //If client exist with driving license
+            //If client with driving license
             if (model.Role == "Client" && model.DrivingLicenseImage != null)
             {
                 // Photo (max 5MB)

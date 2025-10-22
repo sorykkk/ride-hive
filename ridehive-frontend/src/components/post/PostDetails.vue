@@ -304,13 +304,13 @@ onMounted(() => {
             </NCard>
           </NGridItem>
 
-          <!-- Available Time Slots -->
-          <NGridItem>
+          <!-- Available Time Slots (Only visible for owner) -->
+          <NGridItem v-if="isOwner">
             <NCard>
               <template #header>
                 <div class="slots-header">
                   <span class="slots-icon">📅</span>
-                  <span>Available Time Slots</span>
+                  <span>Available Dates</span>
                 </div>
               </template>
 
@@ -321,14 +321,14 @@ onMounted(() => {
                     :key="index"
                   >
                     <div class="time-slot">
-                      <span class="slot-icon">🕐</span>
+                      <span class="slot-icon">✓</span>
                       <span class="slot-time">{{ timeRange.display }}</span>
                     </div>
                   </NGridItem>
                 </NGrid>
               </div>
 
-              <NEmpty v-else description="No available time slots" />
+              <NEmpty v-else description="No available dates" />
             </NCard>
           </NGridItem>
 

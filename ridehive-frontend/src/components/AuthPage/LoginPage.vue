@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../api/Auth'
 import { 
@@ -89,6 +89,11 @@ import {
 const router = useRouter()
 const authStore = useAuthStore()
 const formRef = ref<FormInst | null>(null)
+
+// Clear any previous errors when component mounts
+onMounted(() => {
+  authStore.error = null
+})
 
 const form = ref({
   email: '',
