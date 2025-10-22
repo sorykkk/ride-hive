@@ -179,7 +179,15 @@ onUnmounted(() => {
             <div class="post-info">
               <div class="post-header">
                 <h3 class="post-title">{{ post.title }}</h3>
-                <NTag type="success" class="price-tag">
+                <NButton
+                  v-if="authStore.userRole === 'Client'"
+                  type="success"
+                  class="booking-button"
+                  @click.stop="router.push(`/booking/${post.postId}`)"
+                >
+                  Book - ${{ post.price }}/day
+                </NButton>
+                <NTag v-else type="success" class="price-tag">
                   ${{ post.price }}/day
                 </NTag>
               </div>
@@ -346,6 +354,13 @@ onUnmounted(() => {
   font-weight: 600;
   font-size: 1rem;
   flex-shrink: 0;
+}
+
+.booking-button {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .car-details {

@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     About: typeof import('./src/components/About.vue')['default']
     AddCar: typeof import('./src/components/car/AddCar.vue')['default']
+    BookingPage: typeof import('./src/components/booking/BookingPage.vue')['default']
     CreatePost: typeof import('./src/components/owner/CreatePost.vue')['default']
     EditCar: typeof import('./src/components/car/EditCar.vue')['default']
     EditProfile: typeof import('./src/components/profile/EditProfile.vue')['default']

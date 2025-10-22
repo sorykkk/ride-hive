@@ -459,6 +459,47 @@ namespace RideHiveApi.Migrations
                     b.ToTable("PostItems");
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.Request", b =>
+                {
+                    b.Property<int>("ReqId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReqId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestedDates")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ReqId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PostId", "Status");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Requests");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -536,6 +577,21 @@ namespace RideHiveApi.Migrations
                     b.Navigation("Car");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("RideHiveApi.Models.Request", b =>
+                {
+                    b.HasOne("RideHiveApi.Models.PostItem", null)
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RideHiveApi.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("RideHiveApi.Models.CarItem", b =>

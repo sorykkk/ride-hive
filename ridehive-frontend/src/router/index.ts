@@ -12,6 +12,7 @@ import EditCar from '@/components/car/EditCar.vue'
 import LoginPage from "@/components/AuthPage/LoginPage.vue"
 import RegisterPage from '@/components/AuthPage/RegisterPage.vue'
 import OwnerPosts from '@/components/owner/Posts.vue'
+import BookingPage from '@/components/booking/BookingPage.vue'
 
 const routes = [
   // Public routes 
@@ -129,7 +130,18 @@ const routes = [
     name: 'post-details',
     component: () => import('@/components/post/PostDetails.vue'),
     meta: {title: "Post Details - RideHive", requiresAuth: true}
-  }
+  },
+  {
+    path: '/booking/:id',
+    name: 'booking',
+    component: BookingPage,
+    meta: {
+      title: "Book a Ride - RideHive",
+      requiresAuth: true,
+      requiresRole: 'Client'
+    }
+  },
+
 ]
 
 const router = createRouter({
