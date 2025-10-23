@@ -14,6 +14,7 @@ namespace RideHiveApi.Data
         public DbSet<PostItem> PostItems { get; set; }
         public DbSet<Owner> Owners { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -109,6 +110,40 @@ namespace RideHiveApi.Data
                     entity.HasIndex(e => e.Status);
                     entity.HasIndex(e => new { e.UserId, e.Status });
                     entity.HasIndex(e => new { e.PostId, e.Status });
+                }
+            );
+
+            // Configure Notification entity
+            modelBuilder.Entity<Notification>(entity =>
+                {
+                    entity.HasKey(e => e.NotificationId);
+                    entity.Property(e => e.NotificationId).ValueGeneratedOnAdd();
+
+                    // Configure relationship with User (recipient)
+                    entity.HasOne(n => n.User)
+                        .WithMany()
+                        .HasForeignKey(n => n.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Request
+                    entity.HasOne(n => n.Request)
+                        .WithMany()
+                        .HasForeignKey(n => n.RequestId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Post
+                    entity.HasOne(n => n.Post)
+                        .WithMany()
+                        .HasForeignKey(n => n.PostId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure indexes for efficient queries
+                    entity.HasIndex(e => e.UserId);
+                    entity.HasIndex(e => e.RequestId);
+                    entity.HasIndex(e => e.PostId);
+                    entity.HasIndex(e => e.IsRead);
+                    entity.HasIndex(e => new { e.UserId, e.IsRead });
+                    entity.HasIndex(e => e.CreatedAt);
                 }
             );
 

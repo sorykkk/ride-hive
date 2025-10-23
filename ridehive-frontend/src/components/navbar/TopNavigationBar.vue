@@ -6,7 +6,6 @@ import type { Component } from 'vue'
 import {
   HomeOutline,
   AddOutline,
-  NotificationsOutline,
   InformationCircleOutline,
   Albums } from '@vicons/ionicons5'
 import {
@@ -14,10 +13,10 @@ import {
   NMenu,
   NSpace,
   NIcon,
-  NButton,
-  NBadge } from 'naive-ui'
+  NButton } from 'naive-ui'
 import type { MenuProps } from 'naive-ui'
 import ProfileDropdown from './ProfileDropdown.vue'
+import NotificationsDropdown from './NotificationsDropdown.vue'
 import { useAuthStore } from '@/api/Auth'
 
 // Router setup
@@ -102,13 +101,6 @@ const handlePostClick = () => {
   activeKey.value = null
   router.push({ name: 'create-post' })
 }
-
-// Handle notifications click
-//@todo: handle notification click logic
-const handleNotificationsClick = () => {
-  console.log('Notifications clicked!')
-  // TODO: Open notifications dropdown or navigate to notifications page
-}
 </script>
 
 <template>
@@ -156,19 +148,9 @@ const handleNotificationsClick = () => {
     <!-- Right Side Actions: notifications + profile -->
     <div class="actions-container">
       <NSpace align="center" :size="12">
-        <NBadge :value="3" dot type="error" :offset="[-6, 6]">
-          <NButton 
-            quaternary 
-            circle 
-            @click="handleNotificationsClick"
-            aria-label="Notifications"
-          >
-            <template #icon>
-              <NIcon size="20"><NotificationsOutline /></NIcon>
-            </template>
-          </NButton>
-        </NBadge>
-          
+        <!-- Notifications Dropdown -->
+        <NotificationsDropdown />
+
         <!-- Profile Dropdown -->
         <ProfileDropdown />
       </NSpace>

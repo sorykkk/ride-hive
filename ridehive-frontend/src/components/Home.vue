@@ -49,11 +49,18 @@ const loadPosts = async () => {
   try {
     loading.value = true;
     const allPosts = await postsApi.getAllPosts();
+
+    // Filter posts: only show available posts with time slots
+    const availablePosts = allPosts.filter(post => {
+      // Show post only if it's marked as available AND has time slots
+      return post.available && post.availableTimeSlots && post.availableTimeSlots.length > 0;
+    });
+
     // Sort posts by most recent first using postedAt date
-    posts.value = allPosts.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-    
-    // Load car details for each post
-    const carIds = [...new Set(allPosts.map(post => post.carId))];
+    posts.value = availablePosts.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+
+    // Load car details for each AVAILABLE post only
+    const carIds = [...new Set(availablePosts.map(post => post.carId))];
     for (const carId of carIds) {
       try {
         const car = await carsApi.getCarById(carId);
@@ -62,9 +69,9 @@ const loadPosts = async () => {
         console.warn(`Failed to load car ${carId}:`, error);
       }
     }
-    
-    // Optionally load user details for each post (for displaying owner names)
-    const userIds = [...new Set(allPosts.map(post => post.ownerId))];
+
+    // Load user details for each AVAILABLE post only (for displaying owner names)
+    const userIds = [...new Set(availablePosts.map(post => post.ownerId))];
     for (const userId of userIds) {
       try {
         const user = await usersApi.getBasicUserInfo(userId);

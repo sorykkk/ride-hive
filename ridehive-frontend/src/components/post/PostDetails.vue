@@ -62,7 +62,19 @@ const loadPost = async () => {
   try {
     loading.value = true;
     post.value = await postsApi.getPostById(postId.value);
-    
+
+    // Check if post is available for booking (only for non-owners)
+    if (post.value && !isOwner.value) {
+      const hasTimeSlots = post.value.availableTimeSlots && post.value.availableTimeSlots.length > 0;
+      const isAvailable = post.value.available;
+
+      if (!hasTimeSlots || !isAvailable) {
+        message.warning('This post is no longer available for booking');
+        router.push('/');
+        return;
+      }
+    }
+
     // Load car details
     if (post.value.carId) {
       await loadCarDetails(post.value.carId);
