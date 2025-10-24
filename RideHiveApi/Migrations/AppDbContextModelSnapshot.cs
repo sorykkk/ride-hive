@@ -388,6 +388,59 @@ namespace RideHiveApi.Migrations
                     b.ToTable("CarItems");
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("RideHiveApi.Models.Owner", b =>
                 {
                     b.Property<string>("OwnerId")
@@ -459,6 +512,47 @@ namespace RideHiveApi.Migrations
                     b.ToTable("PostItems");
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.Request", b =>
+                {
+                    b.Property<int>("ReqId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReqId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestedDates")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ReqId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PostId", "Status");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Requests");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -519,6 +613,33 @@ namespace RideHiveApi.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RideHiveApi.Models.Notification", b =>
+                {
+                    b.HasOne("RideHiveApi.Models.PostItem", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RideHiveApi.Models.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RideHiveApi.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RideHiveApi.Models.PostItem", b =>
                 {
                     b.HasOne("RideHiveApi.Models.CarItem", "Car")
@@ -536,6 +657,21 @@ namespace RideHiveApi.Migrations
                     b.Navigation("Car");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("RideHiveApi.Models.Request", b =>
+                {
+                    b.HasOne("RideHiveApi.Models.PostItem", null)
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RideHiveApi.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("RideHiveApi.Models.CarItem", b =>

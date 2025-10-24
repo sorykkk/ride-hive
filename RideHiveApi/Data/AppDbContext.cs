@@ -13,6 +13,8 @@ namespace RideHiveApi.Data
         public DbSet<CarImageData> CarImages { get; set; }
         public DbSet<PostItem> PostItems { get; set; }
         public DbSet<Owner> Owners { get; set; }
+        public DbSet<Request> Requests { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,9 +80,70 @@ namespace RideHiveApi.Data
             modelBuilder.Entity<Owner>(entity =>
                 {
                     entity.HasKey(e => e.OwnerId);
-                    
+
                     // Configure indexes
                     entity.HasIndex(e => e.Name);
+                }
+            );
+
+            // Configure Request entity
+            modelBuilder.Entity<Request>(entity =>
+                {
+                    entity.HasKey(e => e.ReqId);
+                    entity.Property(e => e.ReqId).ValueGeneratedOnAdd();
+
+                    // Configure relationship with User (AppUser)
+                    entity.HasOne<AppUser>()
+                        .WithMany()
+                        .HasForeignKey(r => r.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Post
+                    entity.HasOne<PostItem>()
+                        .WithMany()
+                        .HasForeignKey(r => r.PostId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure indexes for better query performance
+                    entity.HasIndex(e => e.UserId);
+                    entity.HasIndex(e => e.PostId);
+                    entity.HasIndex(e => e.Status);
+                    entity.HasIndex(e => new { e.UserId, e.Status });
+                    entity.HasIndex(e => new { e.PostId, e.Status });
+                }
+            );
+
+            // Configure Notification entity
+            modelBuilder.Entity<Notification>(entity =>
+                {
+                    entity.HasKey(e => e.NotificationId);
+                    entity.Property(e => e.NotificationId).ValueGeneratedOnAdd();
+
+                    // Configure relationship with User (recipient)
+                    entity.HasOne(n => n.User)
+                        .WithMany()
+                        .HasForeignKey(n => n.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Request
+                    entity.HasOne(n => n.Request)
+                        .WithMany()
+                        .HasForeignKey(n => n.RequestId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure relationship with Post
+                    entity.HasOne(n => n.Post)
+                        .WithMany()
+                        .HasForeignKey(n => n.PostId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Configure indexes for efficient queries
+                    entity.HasIndex(e => e.UserId);
+                    entity.HasIndex(e => e.RequestId);
+                    entity.HasIndex(e => e.PostId);
+                    entity.HasIndex(e => e.IsRead);
+                    entity.HasIndex(e => new { e.UserId, e.IsRead });
+                    entity.HasIndex(e => e.CreatedAt);
                 }
             );
 
@@ -105,11 +168,23 @@ namespace RideHiveApi.Data
                 .Property(e => e.Condition)
                 .HasConversion<string>();
 
+            modelBuilder.Entity<Request>()
+                .Property(e => e.Status)
+                .HasConversion<string>();
+
             // Configure AvailableTimeSlots to be stored as JSON
             modelBuilder.Entity<PostItem>()
                 .Property(e => e.AvailableTimeSlots)
                 .HasConversion(
                     timeSlots => System.Text.Json.JsonSerializer.Serialize(timeSlots, new System.Text.Json.JsonSerializerOptions()),
+                    json => System.Text.Json.JsonSerializer.Deserialize<List<DateTime>>(json, new System.Text.Json.JsonSerializerOptions()) ?? new List<DateTime>()
+                );
+
+            // Configure RequestedDates to be stored as JSON
+            modelBuilder.Entity<Request>()
+                .Property(e => e.RequestedDates)
+                .HasConversion(
+                    dates => System.Text.Json.JsonSerializer.Serialize(dates, new System.Text.Json.JsonSerializerOptions()),
                     json => System.Text.Json.JsonSerializer.Deserialize<List<DateTime>>(json, new System.Text.Json.JsonSerializerOptions()) ?? new List<DateTime>()
                 );
 

@@ -62,7 +62,19 @@ const loadPost = async () => {
   try {
     loading.value = true;
     post.value = await postsApi.getPostById(postId.value);
-    
+
+    // Check if post is available for booking (only for non-owners)
+    if (post.value && !isOwner.value) {
+      const hasTimeSlots = post.value.availableTimeSlots && post.value.availableTimeSlots.length > 0;
+      const isAvailable = post.value.available;
+
+      if (!hasTimeSlots || !isAvailable) {
+        message.warning('This post is no longer available for booking');
+        router.push('/');
+        return;
+      }
+    }
+
     // Load car details
     if (post.value.carId) {
       await loadCarDetails(post.value.carId);
@@ -148,7 +160,22 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="price-section">
-                    <div class="price-display">
+                    <!-- Price as clickable button for clients -->
+                    <NButton
+                      v-if="!isOwner && post.available && authStore.userRole === 'Client'"
+                      type="success"
+                      size="large"
+                      strong
+                      class="price-book-button"
+                      @click="router.push(`/booking/${post.postId}`)"
+                    >
+                      <span class="price-icon">€</span>
+                      <span class="price-amount">{{ post.price }}</span>
+                      <span class="price-unit">/day</span>
+                    </NButton>
+
+                    <!-- Regular price display for owners or unavailable posts -->
+                    <div v-else class="price-display">
                       <span class="price-icon">€</span>
                       <span class="price-amount">{{ post.price }}</span>
                       <span class="price-unit">/day</span>
@@ -419,6 +446,32 @@ onMounted(() => {
 }
 
 .price-unit {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.price-book-button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.price-book-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4) !important;
+}
+
+.price-book-button .price-icon,
+.price-book-button .price-amount,
+.price-book-button .price-unit {
+  color: white !important;
+}
+
+.price-book-button .price-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.price-book-button .price-unit {
   font-size: 1rem;
   opacity: 0.9;
 }
