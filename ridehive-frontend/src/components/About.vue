@@ -43,13 +43,13 @@ onMounted(() => {
           <div class="mission-text">
             <h2>Our Mission</h2>
             <p>
-              RideHive is dedicated to creating a more sustainable future by connecting 
-              people who need rides with those who have space to share. We believe that 
-              by working together, we can reduce traffic congestion, lower carbon emissions, 
-              and build stronger communities.
+              RideHive is dedicated to creating a more sustainable future by connecting
+              people who need a car with those who have one available to rent. We believe that
+              by making car access more flexible, we can reduce the need for car ownership,
+              lower carbon emissions, and build stronger, more connected communities.
             </p>
             <p>
-              Our platform makes it easy and safe to find reliable ride-sharing opportunities, 
+              Our platform makes it easy and safe to find reliable car renting opportunities, 
               whether you're commuting to work, heading to events, or planning longer trips.
             </p>
           </div>
@@ -96,12 +96,7 @@ onMounted(() => {
           <div class="feature-card">
             <div class="feature-icon">💰</div>
             <h3>Cost Effective</h3>
-            <p>Share travel costs and save money while contributing to a more sustainable environment.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🌍</div>
-            <h3>Eco-Friendly</h3>
-            <p>Reduce your carbon footprint by sharing rides and helping create a greener future.</p>
+            <p>Renting costs and save money while contributing to a more sustainable environment.</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">📱</div>
@@ -115,7 +110,7 @@ onMounted(() => {
     <!-- CTA Section -->
     <section class="cta-section">
       <div class="container">
-        <h2>Ready to Start Sharing?</h2>
+        <h2>Ready to Start?</h2>
         <p>Join thousands of users who are already making a difference</p>
         <div class="cta-buttons">
           <!-- This should be a router link -->
